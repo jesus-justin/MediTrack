@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: meditrack-backend
+  datasource:
+    url: jdbc:mysql://localhost:3306/meditrack?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: meditrack-super-secure-jwt-signing-key-2026-example
+    expiration-ms: 86400000
+
+cors:
+  allowed-origins: http://localhost:5173,http://localhost:3000
