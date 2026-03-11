@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { authApi } from '../services/api';
+import { getAuthValue, setAuthSession } from '../services/authStorage';
 
 export default function LoginPage() {
-  const token = localStorage.getItem('token');
+  const token = getAuthValue('token');
   const [form, setForm] = useState({ username: 'admin', password: 'Admin@123' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -15,9 +16,7 @@ export default function LoginPage() {
     setError('');
     try {
       const { data } = await authApi.login(form);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('username', data.username);
-      localStorage.setItem('role', data.role);
+      setAuthSession(data);
       navigate('/app');
     } catch (err) {
       setError(err?.response?.data?.error || 'Login failed');

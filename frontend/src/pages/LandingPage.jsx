@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
+import { getAuthValue } from '../services/authStorage';
 
 const slides = [
   {
@@ -37,7 +38,7 @@ const slides = [
 ];
 
 export default function LandingPage() {
-  const token = localStorage.getItem('token');
+  const token = getAuthValue('token');
   if (token) return <Navigate to="/app" replace />;
 
   const [activeSlide, setActiveSlide] = useState(0);
@@ -69,15 +70,6 @@ export default function LandingPage() {
             <h1>MediTrack Medical Center</h1>
             <p>Operational Excellence. Compassionate Care.</p>
           </div>
-        </div>
-
-        <div className="landing-search-wrap">
-          <input type="text" placeholder="Search doctors, departments, or services" />
-        </div>
-
-        <div className="hotline-group">
-          <a href="tel:+63287719000" className="hotline-pill trunk">Trunk Line +632 8-771-9000</a>
-          <a href="tel:+63288765755" className="hotline-pill emergency">Emergency +632 8-876-57-55</a>
         </div>
       </header>
 
@@ -182,24 +174,25 @@ export default function LandingPage() {
 
         <section className="video-showcase">
           <div className="video-copy">
-            <p className="section-kicker">Featured Hospital Story</p>
-            <h3>See the Care Experience in Motion</h3>
+            <p className="section-kicker">Featured Care Journey</p>
+            <h3>Experience Coordinated Care in Action</h3>
             <p>
-              Scroll through MediTrack and discover a more informed, coordinated, and patient-centered way to manage
-              hospital operations. This video section gives your landing page a more modern and engaging hospital-site feel.
+              Discover how MediTrack helps teams deliver safer, more connected, and patient-centered care across every
+              stage of the hospital journey. This overview highlights a professional digital experience designed to build
+              confidence for both patients and healthcare staff.
             </p>
             <div className="video-info-list">
               <div>
-                <strong>Autoplay-ready</strong>
-                <span>The video starts muted so modern browsers allow playback immediately.</span>
+                <strong>Warm welcome</strong>
+                <span>Welcome to MediTrack, where every patient journey is supported with care, clarity, and respect.</span>
               </div>
               <div>
-                <strong>Full controls</strong>
-                <span>Users can play, pause, mute, unmute, and adjust volume directly in the player.</span>
+                <strong>Trusted care environment</strong>
+                <span>Our platform is designed to help patients and care teams stay informed, connected, and confident.</span>
               </div>
               <div>
-                <strong>Welcome message</strong>
-                <span>Use this section to introduce your platform vision and reassure users with clear, brief messaging.</span>
+                <strong>Here for you</strong>
+                <span>Thank you for visiting. We are committed to delivering a safe, coordinated, and compassionate care experience.</span>
               </div>
             </div>
           </div>
@@ -207,7 +200,7 @@ export default function LandingPage() {
           <div className="video-frame-wrap">
             <iframe
               className="landing-video"
-              src="https://www.youtube.com/embed/W5Dm2WCk8jg?autoplay=1&mute=1&controls=1&rel=0"
+              src="https://www.youtube.com/embed/d4Bg8mkfZiw?autoplay=1&mute=1&controls=1&rel=0"
               title="MediTrack featured hospital video"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"

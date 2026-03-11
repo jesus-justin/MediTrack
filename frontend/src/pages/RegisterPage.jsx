@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { authApi } from '../services/api';
+import { getAuthValue, setAuthSession } from '../services/authStorage';
 
 const roles = ['RECEPTIONIST', 'DOCTOR', 'PATIENT'];
 
 export default function RegisterPage() {
-  const token = localStorage.getItem('token');
+  const token = getAuthValue('token');
   const navigate = useNavigate();
   const [form, setForm] = useState({
     username: '',
@@ -25,13 +26,15 @@ export default function RegisterPage() {
 
     try {
       const { data } = await authApi.register(form);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('username', data.username);
-      localStorage.setItem('role', data.role);
+      setAuthSession(data);
       setSuccess('Registration successful. Redirecting...');
       setTimeout(() => navigate('/app'), 500);
     } catch (err) {
-      setError(err?.response?.data?.error || 'Registration failed');
+      if (!err?.response) {
+        setError('Cannot reach server. Please start the backend API at http://localhost:8080 and try again.');
+      } else {
+        setError(err?.response?.data?.error || 'Registration failed');
+      }
     }
   };
 
