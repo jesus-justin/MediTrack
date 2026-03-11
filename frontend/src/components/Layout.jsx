@@ -1,20 +1,31 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { clearAuthSession, getAuthValue } from '../services/authStorage';
 
 const links = [
   { to: '/app', label: 'Dashboard' },
+  { to: '/app/users', label: 'Users' },
   { to: '/app/patients', label: 'Patients' },
   { to: '/app/doctors', label: 'Doctors & Staff' },
   { to: '/app/appointments', label: 'Appointments' },
   { to: '/app/consultations', label: 'Consultations' }
 ];
 
+const roleAccess = {
+  ADMIN: ['/app', '/app/users', '/app/patients', '/app/doctors', '/app/appointments', '/app/consultations'],
+  RECEPTIONIST: ['/app', '/app/patients', '/app/doctors', '/app/appointments', '/app/consultations'],
+  DOCTOR: ['/app', '/app/patients', '/app/doctors', '/app/appointments', '/app/consultations'],
+  PATIENT: ['/app', '/app/appointments', '/app/consultations']
+};
+
 export default function Layout() {
   const navigate = useNavigate();
-  const username = localStorage.getItem('username');
-  const role = localStorage.getItem('role');
+  const username = getAuthValue('username');
+  const role = getAuthValue('role') || 'RECEPTIONIST';
+  const allowed = roleAccess[role] || roleAccess.RECEPTIONIST;
+  const visibleLinks = links.filter((link) => allowed.includes(link.to));
 
   const logout = () => {
-    localStorage.clear();
+    clearAuthSession();
     navigate('/');
   };
 
@@ -24,7 +35,7 @@ export default function Layout() {
         <h1>MediTrack</h1>
         <p className="muted">Hospital Workflow Suite</p>
         <nav>
-          {links.map((link) => (
+          {visibleLinks.map((link) => (
             <NavLink key={link.to} to={link.to} end={link.to === '/app'}>
               {link.label}
             </NavLink>
