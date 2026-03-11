@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAuthValue } from './authStorage';
 
 const API_BASE = 'http://localhost:8080/api';
 
@@ -7,7 +8,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = getAuthValue('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -17,6 +18,13 @@ api.interceptors.request.use((config) => {
 export const authApi = {
   login: (payload) => api.post('/auth/login', payload),
   register: (payload) => api.post('/auth/register', payload)
+};
+
+export const userApi = {
+  list: () => api.get('/users'),
+  create: (payload) => api.post('/users', payload),
+  update: (id, payload) => api.put(`/users/${id}`, payload),
+  remove: (id) => api.delete(`/users/${id}`)
 };
 
 export const patientApi = {
@@ -37,12 +45,34 @@ export const appointmentApi = {
 };
 
 export const consultationApi = {
+  list: () => api.get('/consultations'),
   create: (appointmentId, payload) => api.post(`/consultations/${appointmentId}`, payload),
   timeline: (patientId) => api.get(`/consultations/timeline/${patientId}`)
 };
 
 export const analyticsApi = {
   dashboard: () => api.get('/analytics/dashboard')
+};
+
+export const healthApi = {
+  status: () => api.get('/health')
+};
+
+export const notificationApi = {
+  doctorUpcoming: () => api.get('/notifications/doctor-upcoming'),
+  patientReminders: () => api.get('/notifications/patient-reminders')
+};
+
+export const adminAnalyticsApi = {
+  systemStats: () => api.get('/admin/system-stats')
+};
+
+export const adminPanelApi = {
+  search: (q) => api.get('/admin/search', { params: { q } }),
+  audit: (limit = 20) => api.get('/admin/audit', { params: { limit } }),
+  reportsSummary: () => api.get('/admin/reports/summary'),
+  reportsSummaryCsv: () => api.get('/admin/reports/summary.csv', { responseType: 'blob' }),
+  runMaintenance: () => api.post('/admin/workflows/run-maintenance')
 };
 
 export default api;
