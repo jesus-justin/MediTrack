@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/analytics")
+@RequestMapping("/api/admin")
 @RequiredArgsConstructor
-public class AnalyticsController {
+@PreAuthorize("hasRole('ADMIN')")
+public class AdminAnalyticsController {
 
-    private final AnalyticsService analyticsService;
+    private final AdminAnalyticsService adminAnalyticsService;
 
-    @GetMapping("/dashboard")
-    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR','PATIENT')")
-    public Map<String, Object> dashboard() {
-        return analyticsService.dashboard();
+    @GetMapping("/system-stats")
+    public Map<String, Object> systemStats() {
+        return adminAnalyticsService.systemStats();
     }
 }
