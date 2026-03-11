@@ -20,7 +20,7 @@ public class ConsultationController {
     }
 
     @GetMapping("/timeline/{patientId}")
-    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR','PATIENT')")
     public List<ConsultationRecord> timeline(@PathVariable Long patientId) {
         return consultationService.timeline(patientId);
     }

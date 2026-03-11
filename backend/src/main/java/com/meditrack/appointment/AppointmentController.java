@@ -15,13 +15,13 @@ public class AppointmentController {
     private final AppointmentService appointmentService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR','PATIENT')")
     public List<Appointment> list() {
         return appointmentService.list();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','RECEPTIONIST','DOCTOR','PATIENT')")
     public Appointment get(@PathVariable Long id) {
         return appointmentService.get(id);
     }
