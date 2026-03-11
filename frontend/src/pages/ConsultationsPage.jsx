@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import DataTable from '../components/DataTable';
 import { consultationApi } from '../services/api';
+import { getAuthValue } from '../services/authStorage';
 
 export default function ConsultationsPage() {
+  const role = getAuthValue('role') || 'RECEPTIONIST';
+  const canCreateConsultation = role === 'ADMIN' || role === 'DOCTOR';
+  const canViewTimeline = role === 'ADMIN' || role === 'RECEPTIONIST' || role === 'DOCTOR' || role === 'PATIENT';
   const [appointmentId, setAppointmentId] = useState('');
   const [patientId, setPatientId] = useState('');
   const [timeline, setTimeline] = useState([]);
@@ -27,22 +31,26 @@ export default function ConsultationsPage() {
   return (
     <div>
       <header className="page-header"><h2>Consultation & Medical Records</h2></header>
-      <section className="card">
-        <form className="form-grid" onSubmit={save}>
-          <input placeholder="Appointment ID" value={appointmentId} onChange={(e) => setAppointmentId(e.target.value)} required />
-          <input placeholder="Diagnosis" value={form.diagnosis} onChange={(e) => setForm({ ...form, diagnosis: e.target.value })} required />
-          <textarea placeholder="Prescription" value={form.prescription} onChange={(e) => setForm({ ...form, prescription: e.target.value })} />
-          <textarea placeholder="Clinical notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-          <input placeholder="Attachment URL" value={form.attachmentUrl} onChange={(e) => setForm({ ...form, attachmentUrl: e.target.value })} />
-          <button type="submit">Log Consultation</button>
-        </form>
-      </section>
+      {canCreateConsultation ? (
+        <section className="card">
+          <form className="form-grid" onSubmit={save}>
+            <input placeholder="Appointment ID" value={appointmentId} onChange={(e) => setAppointmentId(e.target.value)} required />
+            <input placeholder="Diagnosis" value={form.diagnosis} onChange={(e) => setForm({ ...form, diagnosis: e.target.value })} required />
+            <textarea placeholder="Prescription" value={form.prescription} onChange={(e) => setForm({ ...form, prescription: e.target.value })} />
+            <textarea placeholder="Clinical notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+            <input placeholder="Attachment URL" value={form.attachmentUrl} onChange={(e) => setForm({ ...form, attachmentUrl: e.target.value })} />
+            <button type="submit">Log Consultation</button>
+          </form>
+        </section>
+      ) : null}
 
-      <section className="card">
-        <h3>Patient Timeline</h3>
-        <input placeholder="Patient ID" value={patientId} onChange={(e) => setPatientId(e.target.value)} />
-        <button onClick={loadTimeline}>Load Timeline</button>
-      </section>
+      {canViewTimeline ? (
+        <section className="card">
+          <h3>Patient Timeline</h3>
+          <input placeholder="Patient ID" value={patientId} onChange={(e) => setPatientId(e.target.value)} />
+          <button onClick={loadTimeline}>Load Timeline</button>
+        </section>
+      ) : null}
 
       <DataTable
         title="Medical History Timeline"

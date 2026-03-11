@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import DataTable from '../components/DataTable';
 import { doctorApi } from '../services/api';
+import { getAuthValue } from '../services/authStorage';
 
 export default function DoctorsPage() {
+  const role = getAuthValue('role') || 'RECEPTIONIST';
+  const canManageDoctors = role === 'ADMIN';
   const [doctors, setDoctors] = useState([]);
   const [workload, setWorkload] = useState([]);
   const [form, setForm] = useState({ fullName: '', specialization: '', department: '', schedule: '' });
@@ -26,15 +29,17 @@ export default function DoctorsPage() {
   return (
     <div>
       <header className="page-header"><h2>Doctor & Staff Management</h2></header>
-      <section className="card">
-        <form className="form-grid" onSubmit={create}>
-          <input placeholder="Full name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required />
-          <input placeholder="Specialization" value={form.specialization} onChange={(e) => setForm({ ...form, specialization: e.target.value })} required />
-          <input placeholder="Department" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} required />
-          <textarea placeholder="Schedule (e.g., Mon-Fri 08:00-16:00)" value={form.schedule} onChange={(e) => setForm({ ...form, schedule: e.target.value })} />
-          <button type="submit">Add Doctor</button>
-        </form>
-      </section>
+      {canManageDoctors ? (
+        <section className="card">
+          <form className="form-grid" onSubmit={create}>
+            <input placeholder="Full name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required />
+            <input placeholder="Specialization" value={form.specialization} onChange={(e) => setForm({ ...form, specialization: e.target.value })} required />
+            <input placeholder="Department" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} required />
+            <textarea placeholder="Schedule (e.g., Mon-Fri 08:00-16:00)" value={form.schedule} onChange={(e) => setForm({ ...form, schedule: e.target.value })} />
+            <button type="submit">Add Doctor</button>
+          </form>
+        </section>
+      ) : null}
 
       <DataTable
         title="Doctors"

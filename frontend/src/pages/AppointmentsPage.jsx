@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import DataTable from '../components/DataTable';
 import { appointmentApi, doctorApi, patientApi } from '../services/api';
+import { getAuthValue } from '../services/authStorage';
 
 export default function AppointmentsPage() {
+  const role = getAuthValue('role') || 'RECEPTIONIST';
+  const canCreateAppointment = role === 'ADMIN' || role === 'RECEPTIONIST';
+  const canUpdateStatus = role === 'ADMIN' || role === 'RECEPTIONIST' || role === 'DOCTOR';
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -43,23 +47,25 @@ export default function AppointmentsPage() {
   return (
     <div>
       <header className="page-header"><h2>Appointment Scheduling</h2></header>
-      <section className="card">
-        <form className="form-grid" onSubmit={create}>
-          <select value={form.patientId} onChange={(e) => setForm({ ...form, patientId: e.target.value })} required>
-            <option value="">Select patient</option>
-            {patients.map((p) => <option key={p.id} value={p.id}>{p.patientCode} - {p.firstName} {p.lastName}</option>)}
-          </select>
-          <select value={form.doctorId} onChange={(e) => setForm({ ...form, doctorId: e.target.value })} required>
-            <option value="">Select doctor</option>
-            {doctors.map((d) => <option key={d.id} value={d.id}>{d.fullName}</option>)}
-          </select>
-          <input type="datetime-local" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} required />
-          <input type="datetime-local" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} required />
-          <input placeholder="Reason" value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} />
-          <textarea placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-          <button type="submit">Book Appointment</button>
-        </form>
-      </section>
+      {canCreateAppointment ? (
+        <section className="card">
+          <form className="form-grid" onSubmit={create}>
+            <select value={form.patientId} onChange={(e) => setForm({ ...form, patientId: e.target.value })} required>
+              <option value="">Select patient</option>
+              {patients.map((p) => <option key={p.id} value={p.id}>{p.patientCode} - {p.firstName} {p.lastName}</option>)}
+            </select>
+            <select value={form.doctorId} onChange={(e) => setForm({ ...form, doctorId: e.target.value })} required>
+              <option value="">Select doctor</option>
+              {doctors.map((d) => <option key={d.id} value={d.id}>{d.fullName}</option>)}
+            </select>
+            <input type="datetime-local" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} required />
+            <input type="datetime-local" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} required />
+            <input placeholder="Reason" value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} />
+            <textarea placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+            <button type="submit">Book Appointment</button>
+          </form>
+        </section>
+      ) : null}
 
       <DataTable
         title="Appointments"
@@ -74,17 +80,19 @@ export default function AppointmentsPage() {
         data={appointments}
       />
 
-      <section className="card action-grid">
-        <h3>Quick Status Updates</h3>
-        {appointments.slice(0, 10).map((a) => (
-          <div key={a.id} className="action-row">
-            <span>Appointment #{a.id}</span>
-            <button onClick={() => setStatus(a.id, 'CONFIRMED')}>Confirm</button>
-            <button onClick={() => setStatus(a.id, 'COMPLETED')}>Complete</button>
-            <button onClick={() => setStatus(a.id, 'CANCELED')}>Cancel</button>
-          </div>
-        ))}
-      </section>
+      {canUpdateStatus ? (
+        <section className="card action-grid">
+          <h3>Quick Status Updates</h3>
+          {appointments.slice(0, 10).map((a) => (
+            <div key={a.id} className="action-row">
+              <span>Appointment #{a.id}</span>
+              <button onClick={() => setStatus(a.id, 'CONFIRMED')}>Confirm</button>
+              <button onClick={() => setStatus(a.id, 'COMPLETED')}>Complete</button>
+              <button onClick={() => setStatus(a.id, 'CANCELED')}>Cancel</button>
+            </div>
+          ))}
+        </section>
+      ) : null}
     </div>
   );
 }
