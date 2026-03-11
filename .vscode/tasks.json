@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "MediTrack Backend",
+      "type": "shell",
+      "command": "mvn spring-boot:run",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "MediTrack Frontend",
+      "type": "shell",
+      "command": "npm.cmd run dev -- --host 0.0.0.0 --port 5173",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "MediTrack Start All",
+      "dependsOn": [
+        "MediTrack Backend",
+        "MediTrack Frontend"
+      ],
+      "dependsOrder": "parallel"
+    }
+  ]
+}
