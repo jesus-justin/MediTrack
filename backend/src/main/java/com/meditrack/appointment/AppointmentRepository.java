@@ -47,4 +47,32 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             order by hour(a.startTime)
             """)
     List<Object[]> peakHourHeatmap();
+
+    @Query("select a.status, count(a) from Appointment a group by a.status")
+    List<Object[]> countByStatus();
+
+    @Query("""
+            select a from Appointment a
+            where lower(concat(a.patient.firstName, ' ', a.patient.lastName)) like lower(concat('%', :q, '%'))
+               or lower(a.doctor.fullName) like lower(concat('%', :q, '%'))
+               or lower(coalesce(a.reason, '')) like lower(concat('%', :q, '%'))
+               or lower(cast(a.status as string)) like lower(concat('%', :q, '%'))
+            order by a.startTime desc
+            """)
+    List<Appointment> searchForAdmin(@Param("q") String q);
+
+    @Query("""
+            select a from Appointment a
+            where a.status = com.meditrack.appointment.AppointmentStatus.PENDING
+              and a.endTime < :threshold
+            order by a.endTime asc
+            """)
+    List<Appointment> findStalePending(@Param("threshold") LocalDateTime threshold);
+
+    @Query("""
+            select count(a) from Appointment a
+            where a.status = com.meditrack.appointment.AppointmentStatus.COMPLETED
+              and a.id not in (select c.appointment.id from ConsultationRecord c)
+            """)
+    long countCompletedWithNoConsultation();
 }

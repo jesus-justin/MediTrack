@@ -16,6 +16,15 @@ public interface ConsultationRepository extends JpaRepository<ConsultationRecord
     List<ConsultationRecord> timelineByPatient(@Param("patientId") Long patientId);
 
     @Query("""
+            select c from ConsultationRecord c
+            where lower(c.diagnosis) like lower(concat('%', :q, '%'))
+               or lower(coalesce(c.notes, '')) like lower(concat('%', :q, '%'))
+               or lower(coalesce(c.prescription, '')) like lower(concat('%', :q, '%'))
+            order by c.createdAt desc
+            """)
+    List<ConsultationRecord> searchForAdmin(@Param("q") String q);
+
+    @Query("""
             select c.diagnosis, count(c.id)
             from ConsultationRecord c
             group by c.diagnosis
