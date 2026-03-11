@@ -13,6 +13,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordPolicyValidator passwordPolicyValidator;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
@@ -25,6 +26,7 @@ public class AuthService {
         }
 
         Role role = request.role() == null ? Role.RECEPTIONIST : request.role();
+        passwordPolicyValidator.validate(request.password());
 
         User user = User.builder()
                 .username(request.username())
