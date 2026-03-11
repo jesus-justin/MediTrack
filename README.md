@@ -100,6 +100,22 @@ npm run dev
 Note for Windows PowerShell with script policy restrictions:
 - Use `npm.cmd install` and `npm.cmd run dev`
 
+## After Restart (Windows Quick Start)
+When you shut down your device, backend and frontend processes stop. After reopening the project, use one of these options to start everything again:
+
+1. Ensure MySQL is running (for example via XAMPP MySQL service on port `3306`).
+2. Double-click `start-meditrack.bat` in the project root.
+3. Or run in PowerShell from project root:
+```powershell
+./start-meditrack.ps1
+```
+
+This opens two terminals:
+- Backend: `http://localhost:8080/api`
+- Frontend: `http://localhost:5173`
+
+You can also use VS Code task `MediTrack Start All` from **Terminal -> Run Task**.
+
 ## Key API Endpoints
 - Auth: `POST /api/auth/register`, `POST /api/auth/login`
 - Patients: `GET/POST/PUT /api/patients`
