@@ -31,8 +31,9 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @Builder.Default
     @Column(nullable = false)
-    private boolean enabled;
+    private boolean enabled = true;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -40,6 +41,5 @@ public class User {
     @PrePersist
     void prePersist() {
         this.createdAt = LocalDateTime.now();
-        this.enabled = true;
     }
 }
