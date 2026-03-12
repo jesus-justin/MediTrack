@@ -9,6 +9,7 @@ import DoctorsPage from './pages/DoctorsPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import ConsultationsPage from './pages/ConsultationsPage';
 import UsersPage from './pages/UsersPage';
+import ReceptionDeskPage from './pages/ReceptionDeskPage';
 import { getAuthValue, hasAuthSession } from './services/authStorage';
 
 function ProtectedRoute({ children }) {
@@ -18,6 +19,11 @@ function ProtectedRoute({ children }) {
 
 function AdminRoute({ children }) {
   if (getAuthValue('role') !== 'ADMIN') return <Navigate to="/app" replace />;
+  return children;
+}
+
+function ReceptionistRoute({ children }) {
+  if (getAuthValue('role') !== 'RECEPTIONIST') return <Navigate to="/app" replace />;
   return children;
 }
 
@@ -40,6 +46,7 @@ export default function App() {
         <Route path="patients" element={<PatientsPage />} />
         <Route path="doctors" element={<DoctorsPage />} />
         <Route path="appointments" element={<AppointmentsPage />} />
+        <Route path="reception-desk" element={<ReceptionistRoute><ReceptionDeskPage /></ReceptionistRoute>} />
         <Route path="consultations" element={<ConsultationsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

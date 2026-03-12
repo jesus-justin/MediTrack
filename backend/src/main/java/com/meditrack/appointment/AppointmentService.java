@@ -7,6 +7,10 @@ import com.meditrack.patient.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -60,6 +64,66 @@ public class AppointmentService {
         return appointmentRepository.save(appointment);
     }
 
+    public Appointment arrangeTime(Long id, AppointmentDtos.ArrangeTimeRequest request) {
+        validateDates(request.startTime(), request.endTime());
+
+        Appointment appointment = get(id);
+        Long targetDoctorId = request.doctorId() == null ? appointment.getDoctor().getId() : request.doctorId();
+        ensureNoConflict(targetDoctorId, request.startTime(), request.endTime(), id);
+
+        if (!targetDoctorId.equals(appointment.getDoctor().getId())) {
+            Doctor doctor = doctorRepository.findById(targetDoctorId)
+                    .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+            appointment.setDoctor(doctor);
+        }
+
+        appointment.setStartTime(request.startTime());
+        appointment.setEndTime(request.endTime());
+        if (request.notes() != null && !request.notes().isBlank()) {
+            String existingNotes = appointment.getNotes() == null ? "" : appointment.getNotes().trim();
+            String newNotes = request.notes().trim();
+            appointment.setNotes(existingNotes.isBlank() ? newNotes : existingNotes + " | " + newNotes);
+        }
+
+        return appointmentRepository.save(appointment);
+    }
+
+    public AppointmentDtos.SlotSuggestionResponse suggestSlots(AppointmentDtos.SlotSuggestionRequest request) {
+        doctorRepository.findById(request.doctorId())
+                .orElseThrow(() -> new IllegalArgumentException("Doctor not found"));
+
+        int duration = request.durationMinutes();
+        int limit = request.limit() == null ? 8 : request.limit();
+
+        LocalDateTime dayStart = LocalDateTime.of(request.date(), LocalTime.of(8, 0));
+        LocalDateTime dayEnd = LocalDateTime.of(request.date(), LocalTime.of(18, 0));
+        List<Appointment> dayAppointments = appointmentRepository.findDoctorAppointmentsForDate(request.doctorId(), dayStart, dayEnd);
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate today = now.toLocalDate();
+
+        List<AppointmentDtos.TimeSlot> slots = new ArrayList<>();
+        LocalDateTime cursor = dayStart;
+
+        while (!cursor.plusMinutes(duration).isAfter(dayEnd) && slots.size() < limit) {
+            LocalDateTime slotEnd = cursor.plusMinutes(duration);
+            boolean inPast = request.date().equals(today) && !cursor.isAfter(now);
+
+            if (!inPast && isAvailable(dayAppointments, cursor, slotEnd)) {
+                slots.add(new AppointmentDtos.TimeSlot(cursor, slotEnd));
+            }
+
+            cursor = cursor.plusMinutes(15);
+        }
+
+        return new AppointmentDtos.SlotSuggestionResponse(
+                request.doctorId(),
+                request.date(),
+                duration,
+                slots
+        );
+    }
+
     public Appointment updateStatus(Long id, AppointmentStatus status) {
         Appointment appointment = get(id);
         appointment.setStatus(status);
@@ -82,6 +146,16 @@ public class AppointmentService {
         if (appointmentRepository.hasConflict(doctorId, startTime, endTime, appointmentId)) {
             throw new IllegalArgumentException("Scheduling conflict: doctor already has an appointment in that timeslot");
         }
+    }
+
+    private boolean isAvailable(List<Appointment> appointments, LocalDateTime start, LocalDateTime end) {
+        for (Appointment appointment : appointments) {
+            boolean overlap = start.isBefore(appointment.getEndTime()) && end.isAfter(appointment.getStartTime());
+            if (overlap) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void validateDates(java.time.LocalDateTime startTime, java.time.LocalDateTime endTime) {

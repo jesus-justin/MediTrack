@@ -63,6 +63,18 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("""
             select a from Appointment a
+            where a.doctor.id = :doctorId
+              and a.status <> com.meditrack.appointment.AppointmentStatus.CANCELED
+              and a.startTime >= :from
+              and a.startTime < :to
+            order by a.startTime asc
+            """)
+    List<Appointment> findDoctorAppointmentsForDate(@Param("doctorId") Long doctorId,
+                                                     @Param("from") LocalDateTime from,
+                                                     @Param("to") LocalDateTime to);
+
+    @Query("""
+            select a from Appointment a
             where a.status = com.meditrack.appointment.AppointmentStatus.PENDING
               and a.endTime < :threshold
             order by a.endTime asc

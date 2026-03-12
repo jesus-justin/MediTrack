@@ -19,6 +19,10 @@ export default function LoginPage() {
       setAuthSession(data);
       navigate('/app');
     } catch (err) {
+      if (!err?.response) {
+        setError('Cannot reach server. Please wait a few seconds and try again.');
+        return;
+      }
       setError(err?.response?.data?.error || 'Login failed');
     }
   };

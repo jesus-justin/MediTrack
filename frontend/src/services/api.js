@@ -41,7 +41,10 @@ export const doctorApi = {
 export const appointmentApi = {
   list: () => api.get('/appointments'),
   create: (payload) => api.post('/appointments', payload),
-  updateStatus: (id, status) => api.patch(`/appointments/${id}/status`, null, { params: { status } })
+  updateStatus: (id, status) => api.patch(`/appointments/${id}/status`, null, { params: { status } }),
+  arrange: (id, payload) => api.patch(`/appointments/${id}/arrange`, payload),
+  receptionSlots: ({ doctorId, date, durationMinutes = 30, limit = 8 }) =>
+    api.get('/appointments/reception/slots', { params: { doctorId, date, durationMinutes, limit } })
 };
 
 export const consultationApi = {

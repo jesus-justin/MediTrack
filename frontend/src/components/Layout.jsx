@@ -7,12 +7,13 @@ const links = [
   { to: '/app/patients', label: 'Patients' },
   { to: '/app/doctors', label: 'Doctors & Staff' },
   { to: '/app/appointments', label: 'Appointments' },
+  { to: '/app/reception-desk', label: 'Reception Desk' },
   { to: '/app/consultations', label: 'Consultations' }
 ];
 
 const roleAccess = {
   ADMIN: ['/app', '/app/users', '/app/patients', '/app/doctors', '/app/appointments', '/app/consultations'],
-  RECEPTIONIST: ['/app', '/app/patients', '/app/doctors', '/app/appointments', '/app/consultations'],
+  RECEPTIONIST: ['/app', '/app/patients', '/app/doctors', '/app/appointments', '/app/reception-desk', '/app/consultations'],
   DOCTOR: ['/app', '/app/patients', '/app/doctors', '/app/appointments', '/app/consultations'],
   PATIENT: ['/app', '/app/appointments', '/app/consultations']
 };
