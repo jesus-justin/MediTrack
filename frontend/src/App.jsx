@@ -10,6 +10,9 @@ import AppointmentsPage from './pages/AppointmentsPage';
 import ConsultationsPage from './pages/ConsultationsPage';
 import UsersPage from './pages/UsersPage';
 import ReceptionDeskPage from './pages/ReceptionDeskPage';
+import TodaySchedulePage from './pages/TodaySchedulePage';
+import QuickBookPage from './pages/QuickBookPage';
+import NotificationsPage from './pages/NotificationsPage';
 import { getAuthValue, hasAuthSession } from './services/authStorage';
 
 function ProtectedRoute({ children }) {
@@ -47,6 +50,9 @@ export default function App() {
         <Route path="doctors" element={<DoctorsPage />} />
         <Route path="appointments" element={<AppointmentsPage />} />
         <Route path="reception-desk" element={<ReceptionistRoute><ReceptionDeskPage /></ReceptionistRoute>} />
+        <Route path="today-schedule" element={<ReceptionistRoute><TodaySchedulePage /></ReceptionistRoute>} />
+        <Route path="quick-book" element={<ReceptionistRoute><QuickBookPage /></ReceptionistRoute>} />
+        <Route path="notifications" element={<ReceptionistRoute><NotificationsPage /></ReceptionistRoute>} />
         <Route path="consultations" element={<ConsultationsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
