@@ -547,6 +547,78 @@ nav a:hover {
   background: rgba(242, 166, 90, 0.2);
 }
 
+.doctor-command-center {
+  border-top: 4px solid #0f766e;
+}
+
+.doctor-command-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.doctor-command-item {
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(240, 253, 250, 0.75);
+  display: grid;
+  gap: 8px;
+}
+
+.doctor-command-item h4 {
+  margin: 0;
+}
+
+.doctor-score {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #115e59;
+}
+
+.doctor-next-time {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.doctor-command-links .quick-links-grid {
+  margin-top: 0;
+}
+
+.doctor-tactical-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.doctor-panel h3 {
+  margin-top: 0;
+}
+
+.doctor-timeline-list,
+.doctor-followup-list {
+  display: grid;
+  gap: 10px;
+}
+
+.doctor-timeline-item,
+.doctor-followup-item {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(20, 33, 61, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.doctor-notebook textarea {
+  min-height: 120px;
+}
+
 .chart-card canvas {
   max-height: 280px;
 }
