@@ -397,6 +397,22 @@ export default function DashboardPage() {
     }
   };
 
+  useEffect(() => {
+    if (role !== 'DOCTOR') return;
+    localStorage.setItem(DOCTOR_SCRATCHPAD_KEY, doctorScratchpad);
+  }, [role, doctorScratchpad]);
+
+  const selectDoctorProfile = (event) => {
+    const nextDoctorName = event.target.value;
+    setSelectedDoctorName(nextDoctorName);
+    localStorage.setItem(DOCTOR_PROFILE_KEY, nextDoctorName);
+  };
+
+  const clearDoctorScratchpad = () => {
+    setDoctorScratchpad('');
+    localStorage.removeItem(DOCTOR_SCRATCHPAD_KEY);
+  };
+
   // ── non-admin KPIs ────────────────────────────────────────────────────────
   const roleKpis = {
     RECEPTIONIST: [
