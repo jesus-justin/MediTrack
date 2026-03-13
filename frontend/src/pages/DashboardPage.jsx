@@ -931,6 +931,18 @@ export default function DashboardPage() {
                       <Link className="dashboard-link" to="/app/consultations">Open Consultations</Link>
                     </div>
                   </article>
+                  <article className="doctor-command-item">
+                    <h4>Care Tempo</h4>
+                    <div className="doctor-tempo-row">
+                      <span>Pending</span>
+                      <strong>{doctorKpis.pendingToday}</strong>
+                    </div>
+                    <div className="doctor-tempo-row">
+                      <span>Confirmed</span>
+                      <strong>{doctorKpis.confirmedToday}</strong>
+                    </div>
+                    <small>Use this ratio to decide if triage reshuffling is needed.</small>
+                  </article>
                 </div>
               </section>
 

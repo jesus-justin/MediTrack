@@ -588,6 +588,18 @@ nav a:hover {
   margin-top: 0;
 }
 
+.doctor-tempo-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(20, 33, 61, 0.18);
+}
+
+.doctor-tempo-row:last-of-type {
+  border-bottom: none;
+}
+
 .doctor-tactical-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
