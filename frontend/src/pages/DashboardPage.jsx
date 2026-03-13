@@ -421,9 +421,9 @@ export default function DashboardPage() {
       { label: 'Registered Patients', value: summary.patients }
     ],
     DOCTOR: [
-      { label: 'Total Appointments', value: summary.appointments },
-      { label: 'Completed Appointments', value: summary.completedAppointments },
-      { label: 'Consultation Records', value: summary.consultations }
+      { label: 'Today Caseload', value: doctorKpis?.todayTotal ?? 0 },
+      { label: 'Completed Today', value: doctorKpis?.completedToday ?? 0 },
+      { label: 'Focus Time', value: formatMinutes(doctorKpis?.focusedMinutes ?? 0) }
     ],
     PATIENT: [
       { label: 'Active Doctors', value: summary.doctors },
