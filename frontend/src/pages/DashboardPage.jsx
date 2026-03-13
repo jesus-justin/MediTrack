@@ -56,6 +56,7 @@ function isSameLocalDate(a, b) {
 
 export default function DashboardPage() {
   const role = getAuthValue('role') || 'RECEPTIONIST';
+  const username = getAuthValue('username') || '';
   const [dashboard, setDashboard] = useState({});
   const [summary, setSummary] = useState({
     patients: 0,
@@ -89,6 +90,15 @@ export default function DashboardPage() {
   const [reports, setReports] = useState(null);
   const [workflowResult, setWorkflowResult] = useState(null);
   const [runningWorkflow, setRunningWorkflow] = useState(false);
+  const [allDoctors, setAllDoctors] = useState([]);
+  const [allAppointments, setAllAppointments] = useState([]);
+  const [allConsultations, setAllConsultations] = useState([]);
+  const [selectedDoctorName, setSelectedDoctorName] = useState(
+    () => localStorage.getItem(DOCTOR_PROFILE_KEY) || ''
+  );
+  const [doctorScratchpad, setDoctorScratchpad] = useState(
+    () => localStorage.getItem(DOCTOR_SCRATCHPAD_KEY) || ''
+  );
 
   const load = async () => {
     setRefreshing(true);
@@ -132,6 +142,9 @@ export default function DashboardPage() {
       setSystemStats(stats);
       setAuditLogs(audit);
       setReports(reportSummary);
+      setAllDoctors(doctors);
+      setAllAppointments(appointments);
+      setAllConsultations(consultations);
       setSummary({
         patients: patients.length,
         doctors: doctors.length,
@@ -145,6 +158,15 @@ export default function DashboardPage() {
         completedAppointments: appointments.filter((a) => a.status === 'COMPLETED').length,
         canceledAppointments: appointments.filter((a) => a.status === 'CANCELED').length
       });
+
+      if (role === 'DOCTOR' && !selectedDoctorName && doctors.length > 0) {
+        const normalizedUsername = normalizeText(username);
+        const profileMatch = doctors.find((doctor) => normalizeText(doctor.fullName).includes(normalizedUsername));
+        const fallbackDoctor = doctors[0];
+        const initialDoctorName = profileMatch?.fullName || fallbackDoctor.fullName;
+        setSelectedDoctorName(initialDoctorName);
+        localStorage.setItem(DOCTOR_PROFILE_KEY, initialDoctorName);
+      }
     } finally {
       setRefreshing(false);
     }
