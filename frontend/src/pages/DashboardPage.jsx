@@ -266,6 +266,78 @@ export default function DashboardPage() {
     return { labels: Object.keys(counts), values: Object.values(counts) };
   }, [users]);
 
+  const doctorNameOptions = useMemo(() => {
+    return allDoctors
+      .map((doctor) => doctor.fullName)
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
+  }, [allDoctors]);
+
+  const scopedDoctorAppointments = useMemo(() => {
+    if (role !== 'DOCTOR' || !selectedDoctorName) return [];
+    const normalizedSelected = normalizeText(selectedDoctorName);
+    return allAppointments
+      .filter((appointment) => normalizeText(appointment?.doctor?.fullName).includes(normalizedSelected))
+      .sort((left, right) => new Date(left.startTime) - new Date(right.startTime));
+  }, [role, selectedDoctorName, allAppointments]);
+
+  const doctorTodayAppointments = useMemo(() => {
+    const now = new Date();
+    return scopedDoctorAppointments.filter((appointment) => {
+      const start = toDateOrNull(appointment.startTime);
+      return start ? isSameLocalDate(start, now) : false;
+    });
+  }, [scopedDoctorAppointments]);
+
+  const doctorKpis = useMemo(() => {
+    if (role !== 'DOCTOR') return null;
+
+    const now = new Date();
+    const completedToday = doctorTodayAppointments.filter((appointment) => appointment.status === 'COMPLETED').length;
+    const pendingToday = doctorTodayAppointments.filter((appointment) => appointment.status === 'PENDING').length;
+    const confirmedToday = doctorTodayAppointments.filter((appointment) => appointment.status === 'CONFIRMED').length;
+    const upcomingToday = doctorTodayAppointments.filter((appointment) => {
+      const start = toDateOrNull(appointment.startTime);
+      return start ? start.getTime() > now.getTime() : false;
+    });
+
+    const nextAppointment = upcomingToday[0] || null;
+    const focusedMinutes = doctorTodayAppointments.reduce((total, appointment) => {
+      return total + toMinutes(appointment.startTime, appointment.endTime);
+    }, 0);
+
+    const consultationIds = new Set(
+      allConsultations
+        .map((consultation) => consultation?.appointment?.id)
+        .filter((id) => typeof id === 'number')
+    );
+    const completedWithoutConsultation = doctorTodayAppointments.filter(
+      (appointment) => appointment.status === 'COMPLETED' && !consultationIds.has(appointment.id)
+    );
+
+    const utilizationScore = Math.min(100, Math.round((focusedMinutes / 360) * 100));
+    const maxBackToBack = doctorTodayAppointments.reduce((streak, appointment, index, arr) => {
+      if (index === 0) return 1;
+      const previousEnd = toDateOrNull(arr[index - 1].endTime);
+      const currentStart = toDateOrNull(appointment.startTime);
+      if (!previousEnd || !currentStart) return 1;
+      const gapMinutes = Math.round((currentStart.getTime() - previousEnd.getTime()) / 60000);
+      return gapMinutes <= 15 ? streak + 1 : 1;
+    }, 0);
+
+    return {
+      todayTotal: doctorTodayAppointments.length,
+      completedToday,
+      pendingToday,
+      confirmedToday,
+      focusedMinutes,
+      utilizationScore,
+      nextAppointment,
+      completedWithoutConsultation,
+      maxBackToBack
+    };
+  }, [role, doctorTodayAppointments, allConsultations]);
+
   const toggleUserEnabled = async (user) => {
     try {
       await userApi.update(user.id, {
