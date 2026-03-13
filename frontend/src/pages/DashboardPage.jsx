@@ -316,14 +316,24 @@ export default function DashboardPage() {
     );
 
     const utilizationScore = Math.min(100, Math.round((focusedMinutes / 360) * 100));
-    const maxBackToBack = doctorTodayAppointments.reduce((streak, appointment, index, arr) => {
-      if (index === 0) return 1;
-      const previousEnd = toDateOrNull(arr[index - 1].endTime);
+    let activeStreak = 0;
+    let maxBackToBack = 0;
+    doctorTodayAppointments.forEach((appointment, index, source) => {
+      if (index === 0) {
+        activeStreak = 1;
+        maxBackToBack = 1;
+        return;
+      }
+      const previousEnd = toDateOrNull(source[index - 1].endTime);
       const currentStart = toDateOrNull(appointment.startTime);
-      if (!previousEnd || !currentStart) return 1;
-      const gapMinutes = Math.round((currentStart.getTime() - previousEnd.getTime()) / 60000);
-      return gapMinutes <= 15 ? streak + 1 : 1;
-    }, 0);
+      if (!previousEnd || !currentStart) {
+        activeStreak = 1;
+      } else {
+        const gapMinutes = Math.round((currentStart.getTime() - previousEnd.getTime()) / 60000);
+        activeStreak = gapMinutes <= 15 ? activeStreak + 1 : 1;
+      }
+      maxBackToBack = Math.max(maxBackToBack, activeStreak);
+    });
 
     return {
       todayTotal: doctorTodayAppointments.length,
@@ -889,10 +899,10 @@ export default function DashboardPage() {
                 <div className="doctor-command-grid">
                   <article className="doctor-command-item">
                     <h4>My Profile Scope</h4>
-                    <select value={selectedDoctorName} onChange={selectDoctorProfile}>
-                      {doctorNameOptions.map((doctorName) => (
+                    <select value={selectedDoctorName} onChange={selectDoctorProfile} disabled={doctorNameOptions.length === 0}>
+                      {doctorNameOptions.length > 0 ? doctorNameOptions.map((doctorName) => (
                         <option key={doctorName} value={doctorName}>{doctorName}</option>
-                      ))}
+                      )) : <option value="">No doctor profiles found</option>}
                     </select>
                     <small>Dashboard insights are filtered to this clinician profile.</small>
                   </article>
