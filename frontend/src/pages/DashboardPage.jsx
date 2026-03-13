@@ -15,6 +15,45 @@ import {
 import { BarChartCard, DoughnutChartCard, LineChartCard } from '../components/ChartCard';
 import { getAuthValue } from '../services/authStorage';
 
+const DOCTOR_PROFILE_KEY = 'doctorDashboardProfile';
+const DOCTOR_SCRATCHPAD_KEY = 'doctorDashboardScratchpad';
+
+function normalizeText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/dr\.?/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function toDateOrNull(value) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function toMinutes(start, end) {
+  const startDate = toDateOrNull(start);
+  const endDate = toDateOrNull(end);
+  if (!startDate || !endDate) return 0;
+  return Math.max(0, Math.round((endDate.getTime() - startDate.getTime()) / 60000));
+}
+
+function formatMinutes(totalMinutes) {
+  const safeMinutes = Math.max(0, Number(totalMinutes) || 0);
+  const hours = Math.floor(safeMinutes / 60);
+  const minutes = safeMinutes % 60;
+  if (hours === 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
+}
+
+function isSameLocalDate(a, b) {
+  return a.getFullYear() === b.getFullYear()
+    && a.getMonth() === b.getMonth()
+    && a.getDate() === b.getDate();
+}
+
 export default function DashboardPage() {
   const role = getAuthValue('role') || 'RECEPTIONIST';
   const [dashboard, setDashboard] = useState({});
