@@ -879,6 +879,102 @@ export default function DashboardPage() {
             ))}
           </div>
 
+          {role === 'DOCTOR' && doctorKpis && (
+            <>
+              <section className="card doctor-command-center">
+                <div className="section-header-row">
+                  <h3>Doctor Command Center</h3>
+                  <small>Only visible to doctor accounts.</small>
+                </div>
+                <div className="doctor-command-grid">
+                  <article className="doctor-command-item">
+                    <h4>My Profile Scope</h4>
+                    <select value={selectedDoctorName} onChange={selectDoctorProfile}>
+                      {doctorNameOptions.map((doctorName) => (
+                        <option key={doctorName} value={doctorName}>{doctorName}</option>
+                      ))}
+                    </select>
+                    <small>Dashboard insights are filtered to this clinician profile.</small>
+                  </article>
+                  <article className="doctor-command-item">
+                    <h4>Clinical Load Index</h4>
+                    <p className="doctor-score">{doctorKpis.utilizationScore}%</p>
+                    <small>{doctorKpis.maxBackToBack} back-to-back slot(s) today</small>
+                  </article>
+                  <article className="doctor-command-item">
+                    <h4>Next Appointment</h4>
+                    {doctorKpis.nextAppointment ? (
+                      <>
+                        <p className="doctor-next-time">
+                          {new Date(doctorKpis.nextAppointment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                        <small>
+                          {doctorKpis.nextAppointment.patient?.firstName} {doctorKpis.nextAppointment.patient?.lastName}
+                        </small>
+                      </>
+                    ) : <small>No upcoming appointment for today.</small>}
+                  </article>
+                  <article className="doctor-command-item doctor-command-links">
+                    <h4>Clinical Actions</h4>
+                    <div className="quick-links-grid">
+                      <Link className="dashboard-link" to="/app/appointments">Open Appointments</Link>
+                      <Link className="dashboard-link" to="/app/consultations">Open Consultations</Link>
+                    </div>
+                  </article>
+                </div>
+              </section>
+
+              <section className="doctor-tactical-grid">
+                <article className="card doctor-panel">
+                  <h3>Today Queue Timeline</h3>
+                  <div className="doctor-timeline-list">
+                    {doctorTodayAppointments.map((appointment) => (
+                      <div key={appointment.id} className="doctor-timeline-item">
+                        <strong>
+                          {new Date(appointment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </strong>
+                        <span>
+                          {appointment.patient?.firstName} {appointment.patient?.lastName}
+                        </span>
+                        <small>{appointment.status}</small>
+                      </div>
+                    ))}
+                    {doctorTodayAppointments.length === 0 ? <small>No appointments scheduled for today.</small> : null}
+                  </div>
+                </article>
+
+                <article className="card doctor-panel">
+                  <h3>Consultation Follow-up Radar</h3>
+                  <div className="doctor-followup-list">
+                    {doctorKpis.completedWithoutConsultation.map((appointment) => (
+                      <div key={appointment.id} className="doctor-followup-item">
+                        <strong>Appointment #{appointment.id}</strong>
+                        <span>{appointment.patient?.firstName} {appointment.patient?.lastName}</span>
+                        <small>Completed but missing consultation note.</small>
+                      </div>
+                    ))}
+                    {doctorKpis.completedWithoutConsultation.length === 0 ? (
+                      <small>All completed appointments are documented.</small>
+                    ) : null}
+                  </div>
+                </article>
+              </section>
+
+              <section className="card doctor-notebook">
+                <div className="section-header-row">
+                  <h3>Private Clinical Scratchpad</h3>
+                  <button type="button" onClick={clearDoctorScratchpad}>Clear</button>
+                </div>
+                <textarea
+                  placeholder="Quick note templates, follow-up reminders, or talking points for your next rounds..."
+                  value={doctorScratchpad}
+                  onChange={(event) => setDoctorScratchpad(event.target.value)}
+                />
+                <small>Stored only in your browser session on this machine.</small>
+              </section>
+            </>
+          )}
+
           <section className="card">
             <h3>Connected Care Workflow</h3>
             <div className="connected-flow-grid">
