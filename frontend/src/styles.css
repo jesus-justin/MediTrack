@@ -1183,6 +1183,28 @@ td {
   letter-spacing: 0.02em;
 }
 
+/* ── Password requirements list ─────────────── */
+.auth-pw-reqs {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 10px;
+}
+.auth-pw-reqs__item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.71rem;
+  color: #94a3b8;
+  font-family: 'IBM Plex Sans', sans-serif;
+  transition: color 0.18s;
+}
+.auth-pw-reqs__item svg { flex-shrink: 0; color: #cbd5e1; transition: color 0.18s; }
+.auth-pw-reqs__item--met { color: #059669; }
+.auth-pw-reqs__item--met svg { color: #059669; }
+
 /* Role selector cards */
 .auth-role-selector {
   display: grid;

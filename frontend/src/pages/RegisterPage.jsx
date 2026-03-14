@@ -240,6 +240,24 @@ export default function RegisterPage() {
                   </span>
                 </div>
               )}
+
+              <ul className="auth-pw-reqs">
+                {[
+                  { ok: form.password.length >= 8,       text: 'At least 8 characters' },
+                  { ok: /[A-Z]/.test(form.password),     text: 'One uppercase letter' },
+                  { ok: /[0-9]/.test(form.password),     text: 'One number' },
+                  { ok: /[^A-Za-z0-9]/.test(form.password), text: 'One special character' },
+                ].map(({ ok, text }) => (
+                  <li key={text} className={`auth-pw-reqs__item${ok ? ' auth-pw-reqs__item--met' : ''}`}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      {ok
+                        ? <polyline points="20 6 9 17 4 12" />
+                        : <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>}
+                    </svg>
+                    {text}
+                  </li>
+                ))}
+              </ul>
             </div>
 
             {/* Role selector */}
