@@ -1292,6 +1292,54 @@ td {
 
 .auth-footer a:hover { text-decoration: underline; color: #0d9488; }
 
+/* ── Demo hint ───────────────────────────────── */
+.auth-demo-hint {
+  margin-top: 16px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  font-size: 0.8rem;
+  color: #0f766e;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.auth-demo-hint__label {
+  font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0f766e;
+  opacity: 0.75;
+}
+.auth-demo-hint code {
+  background: rgba(15,118,110,0.12);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.78rem;
+  font-family: 'IBM Plex Mono', monospace, monospace;
+  color: #0f766e;
+}
+
+/* ── Accessibility: focus-visible rings ─────── */
+.auth-field__input:focus-visible,
+.auth-submit-btn:focus-visible,
+.auth-role-option:focus-within,
+.auth-field__toggle:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+.auth-footer a:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
 /* ── Responsive ─────────────────────────────── */
 @media (max-width: 900px) {
   .auth-layout { grid-template-columns: 1fr; }

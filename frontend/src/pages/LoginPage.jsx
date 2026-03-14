@@ -187,6 +187,11 @@ export default function LoginPage() {
             </button>
           </form>
 
+          <div className="auth-demo-hint">
+            <span className="auth-demo-hint__label">Demo credentials</span>
+            <code>admin</code> / <code>Admin@123</code>
+          </div>
+
           <div className="auth-footer">
             <p>New to MediTrack? <Link to="/register">Create an account</Link></p>
             <p><Link to="/">← Back to home</Link></p>
