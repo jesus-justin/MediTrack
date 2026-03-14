@@ -110,28 +110,30 @@
     - Result: ✅ Compile SUCCESS | ✅ Tests: 0/0 passed
     - Notes: Project has no test sources under `src/test/java`.
   - **Deferred Work**: None
-  - **Commit**: Pending
+  - **Commit**: 6a09f81 - Step 2: Setup Baseline - Compile: SUCCESS, Tests: 0/0 passed
 
 - **Step 3: Upgrade Java Target to 21**
-  - **Status**: ⏳ In Progress
+  - **Status**: ✅ Completed
   - **Changes Made**:
-    - None
+    - Updated `java.version` property from 17 to 21 in `pom.xml`.
+    - Kept Spring Boot and dependency graph unchanged.
+    - Verified compile compatibility on JDK 21.
   - **Review Code Changes**:
-    - Sufficiency: 🔘 Pending
-    - Necessity: 🔘 Pending
-      - Functional Behavior: 🔘 Pending
-      - Security Controls: 🔘 Pending
+    - Sufficiency: ✅ All required changes present
+    - Necessity: ✅ All changes necessary
+      - Functional Behavior: ✅ Preserved
+      - Security Controls: ✅ Preserved
   - **Verification**:
-    - Command: Pending
-    - JDK: Pending
-    - Build tool: Pending
-    - Result: Pending
-    - Notes: Pending
+    - Command: `mvn -B clean test-compile`
+    - JDK: C:\Users\Justin\.jdk\jdk-21.0.8
+    - Build tool: C:\maven\apache-maven-3.9.12\bin\mvn.cmd
+    - Result: ✅ Compile SUCCESS
+    - Notes: No source-level changes required beyond Java target property.
   - **Deferred Work**: None
   - **Commit**: Pending
 
 - **Step 4: Final Validation**
-  - **Status**: 🔘 Not Started
+  - **Status**: ⏳ In Progress
   - **Changes Made**:
     - None
   - **Review Code Changes**:
