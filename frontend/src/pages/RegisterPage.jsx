@@ -101,6 +101,15 @@ export default function RegisterPage() {
               />
             </svg>
           </div>
+
+          <div className="auth-trust-strip">
+            {[['🔒','HIPAA'], ['☁️','Cloud'], ['✅','ISO 27001']].map(([icon, label]) => (
+              <div className="auth-trust-badge" key={label}>
+                <span className="auth-trust-badge__icon">{icon}</span>
+                {label}
+              </div>
+            ))}
+          </div>
         </div>
         <div className="auth-brand-deco auth-brand-deco--1" />
         <div className="auth-brand-deco auth-brand-deco--2" />
