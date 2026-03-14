@@ -90,28 +90,30 @@
     - Result: ✅ Environment setup SUCCESS
     - Notes: Maven wrapper not present; using system Maven path.
   - **Deferred Work**: None
-  - **Commit**: Pending
+  - **Commit**: 44aa03a - Step 1: Setup Environment - Compile: N/A
 
 - **Step 2: Setup Baseline**
-  - **Status**: ⏳ In Progress
+  - **Status**: ✅ Completed
   - **Changes Made**:
-    - None
+    - Ran baseline `test-compile` on JDK 17.
+    - Ran baseline `test` on JDK 17.
+    - Captured successful baseline with no test classes present.
   - **Review Code Changes**:
-    - Sufficiency: 🔘 Pending
-    - Necessity: 🔘 Pending
-      - Functional Behavior: 🔘 Pending
-      - Security Controls: 🔘 Pending
+    - Sufficiency: ✅ All required changes present
+    - Necessity: ✅ All changes necessary
+      - Functional Behavior: ✅ Preserved
+      - Security Controls: ✅ Preserved
   - **Verification**:
-    - Command: Pending
-    - JDK: Pending
-    - Build tool: Pending
-    - Result: Pending
-    - Notes: Pending
+    - Command: `mvn -B clean test-compile` and `mvn -B clean test`
+    - JDK: C:\Program Files\Eclipse Adoptium\jdk-17.0.18.8-hotspot
+    - Build tool: C:\maven\apache-maven-3.9.12\bin\mvn.cmd
+    - Result: ✅ Compile SUCCESS | ✅ Tests: 0/0 passed
+    - Notes: Project has no test sources under `src/test/java`.
   - **Deferred Work**: None
   - **Commit**: Pending
 
 - **Step 3: Upgrade Java Target to 21**
-  - **Status**: 🔘 Not Started
+  - **Status**: ⏳ In Progress
   - **Changes Made**:
     - None
   - **Review Code Changes**:
