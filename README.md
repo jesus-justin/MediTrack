@@ -116,6 +116,30 @@ This opens two terminals:
 
 You can also use VS Code task `MediTrack Start All` from **Terminal -> Run Task**.
 
+## Permanent Fix: Auto-Start MediTrack After Login (Windows)
+To prevent the recurring "Cannot reach server" error after reboot, install the built-in scheduled auto-start task once:
+
+```powershell
+./install-meditrack-autostart.ps1
+```
+
+What this does:
+- Creates a Windows Scheduled Task named `MediTrack Auto Start`
+- Automatically runs `start-meditrack.ps1` every time you sign in
+- Adds a short startup delay so services can initialize cleanly
+- If Scheduled Task creation is not permitted on your account, it falls back to a Startup-folder launcher (no admin needed)
+
+To remove auto-start later:
+
+```powershell
+./remove-meditrack-autostart.ps1
+```
+
+Notes:
+- Keep MySQL (XAMPP) installed/runnable on port `3306`
+- The launcher now attempts to start common MySQL service names automatically and waits for readiness
+- Login now retries while backend is warming up, reducing startup race failures
+
 ## Key API Endpoints
 - Auth: `POST /api/auth/login`
 - Patients: `GET/POST/PUT /api/patients`
