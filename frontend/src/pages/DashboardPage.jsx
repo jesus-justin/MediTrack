@@ -13,6 +13,7 @@ import {
   userApi
 } from '../services/api';
 import { BarChartCard, DoughnutChartCard, LineChartCard } from '../components/ChartCard';
+import PatientChatbotCard from '../components/PatientChatbotCard';
 import { getAuthValue } from '../services/authStorage';
 
 const DOCTOR_PROFILE_KEY = 'doctorDashboardProfile';
@@ -1030,6 +1031,8 @@ export default function DashboardPage() {
               ))}
             </div>
           </section>
+
+          {role === 'PATIENT' ? <PatientChatbotCard /> : null}
         </>
       )}
     </div>
