@@ -5,6 +5,7 @@ $backendPath = Join-Path $root 'backend'
 $frontendPath = Join-Path $root 'frontend'
 $logDir = Join-Path $root 'logs'
 $backendUrl = 'http://localhost:8081/api'
+$mysqlPort = 3306
 
 if (-not (Test-Path $logDir)) {
   New-Item -Path $logDir -ItemType Directory | Out-Null
@@ -45,6 +46,26 @@ function Test-PortListening {
   }
 }
 
+function Get-PortOwnerSummary {
+  param([int]$Port)
+
+  try {
+    $connection = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction Stop | Select-Object -First 1
+    if (-not $connection) {
+      return $null
+    }
+
+    $process = Get-Process -Id $connection.OwningProcess -ErrorAction SilentlyContinue
+    if ($process) {
+      return "$($process.ProcessName) (PID $($process.Id))"
+    }
+
+    return "PID $($connection.OwningProcess)"
+  } catch {
+    return $null
+  }
+}
+
 function Test-BackendHealthy {
   try {
     $response = Invoke-RestMethod -Method Get -Uri "$backendUrl/health" -TimeoutSec 5 -ErrorAction Stop
@@ -73,9 +94,40 @@ function Wait-ForPort {
   return $false
 }
 
+function Ensure-MySqlReady {
+  if (Test-PortListening -Port $mysqlPort) {
+    return $true
+  }
+
+  foreach ($serviceName in @('mysql', 'MySQL80', 'mysql80', 'xamppmysql')) {
+    try {
+      $service = Get-Service -Name $serviceName -ErrorAction Stop
+      if ($service.Status -ne 'Running') {
+        Start-Service -Name $serviceName -ErrorAction Stop
+        Write-Host "Started MySQL service '$serviceName'." -ForegroundColor Cyan
+      }
+      break
+    } catch {
+      continue
+    }
+  }
+
+  return (Wait-ForPort -Port $mysqlPort -TimeoutSeconds 45 -ServiceName 'MySQL')
+}
+
 function Start-BackendIfNeeded {
   if (Test-BackendHealthy) {
     Write-Host 'Backend already responding on http://localhost:8081/api.' -ForegroundColor Green
+    return
+  }
+
+  if ((Test-PortListening -Port 8081) -and (-not (Test-BackendHealthy))) {
+    $owner = Get-PortOwnerSummary -Port 8081
+    if ($owner) {
+      Write-Host "Port 8081 is already in use by $owner. Stop that process and start MediTrack again." -ForegroundColor Red
+    } else {
+      Write-Host 'Port 8081 is already in use by another process. Stop it and start MediTrack again.' -ForegroundColor Red
+    }
     return
   }
 
@@ -117,10 +169,9 @@ function Start-FrontendIfNeeded {
 
 Write-Host 'Starting MediTrack services...' -ForegroundColor Cyan
 
-$mysqlListening = Test-PortListening -Port 3306
-
-if (-not $mysqlListening) {
-  Write-Host 'Warning: MySQL is not listening on port 3306. Start MySQL (XAMPP) for full app functionality.' -ForegroundColor Yellow
+$mysqlReady = Ensure-MySqlReady
+if (-not $mysqlReady) {
+  Write-Host 'MySQL is still unavailable on port 3306. Backend may fail to start until MySQL is up.' -ForegroundColor Yellow
 }
 
 Start-BackendIfNeeded
