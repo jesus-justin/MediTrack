@@ -1,0 +1,9 @@
+{
+  "files.exclude": {
+    "backend/target": true,
+    "backend/src/main/java/com/meditrack/chatbot/env": true,
+    "frontend/dist": true,
+    "frontend/node_modules": true,
+    "logs": true
+  }
+}
