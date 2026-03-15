@@ -65,7 +65,7 @@ MediTrack/
 
 ## Run Locally
 ## Prerequisites
-- Java 17+
+- Java 21
 - Maven 3.9+
 - MySQL 8+
 - Node.js 18+
@@ -82,7 +82,7 @@ mysql -u root -p < database/meditrack_mysql.sql
 cd backend
 mvn spring-boot:run
 ```
-3. API base URL: `http://localhost:8080/api`
+3. API base URL: `http://localhost:8081/api`
 
 Default seeded admin account:
 - Username: `admin`
@@ -111,13 +111,13 @@ When you shut down your device, backend and frontend processes stop. After reope
 ```
 
 This opens two terminals:
-- Backend: `http://localhost:8080/api`
+- Backend: `http://localhost:8081/api`
 - Frontend: `http://localhost:5173`
 
 You can also use VS Code task `MediTrack Start All` from **Terminal -> Run Task**.
 
 ## Key API Endpoints
-- Auth: `POST /api/auth/register`, `POST /api/auth/login`
+- Auth: `POST /api/auth/login`
 - Patients: `GET/POST/PUT /api/patients`
 - Doctors: `GET/POST/PUT /api/doctors`, `GET /api/doctors/workload`
 - Appointments: `GET/POST/PUT /api/appointments`, `PATCH /api/appointments/{id}/status`
@@ -129,6 +129,20 @@ You can also use VS Code task `MediTrack Start All` from **Terminal -> Run Task*
 - JWT bearer token authentication
 - Method-level role protection via `@PreAuthorize`
 - CORS configured for frontend dev ports
+
+## Patient AI Chatbot Setup (Gemini)
+The patient dashboard chatbot uses a backend proxy endpoint, so your Gemini API key is never exposed in frontend JavaScript.
+
+1. Set a backend environment variable before starting Spring Boot:
+```powershell
+$env:GEMINI_API_KEY="your_gemini_api_key"
+```
+2. Start backend and frontend as usual.
+3. Login as a patient-role account and open the dashboard.
+
+Implementation details:
+- Backend endpoint: `POST /api/patient-chatbot/message`
+- Frontend never stores the key in `.env` client variables.
 
 ## Suggested 4-Month Extension Plan
 1. Month 1
