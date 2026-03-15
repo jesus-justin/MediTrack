@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { authApi } from '../services/api';
+import { authApi, waitForBackendReady } from '../services/api';
 import { getAuthValue, setAuthSession } from '../services/authStorage';
 
 export default function LoginPage() {
@@ -23,7 +23,20 @@ export default function LoginPage() {
       navigate('/app');
     } catch (err) {
       if (!err?.response) {
-        setError('Cannot reach server. Please wait a few seconds and try again.');
+        const backendReady = await waitForBackendReady();
+        if (backendReady) {
+          try {
+            const { data } = await authApi.login(form);
+            setAuthSession(data);
+            navigate('/app');
+            return;
+          } catch (retryErr) {
+            setError(retryErr?.response?.data?.error || 'Login failed');
+            return;
+          }
+        }
+
+        setError('Cannot reach server. MediTrack services are not running yet. Use start-meditrack.ps1 or enable auto-start.');
       } else {
         setError(err?.response?.data?.error || 'Login failed');
       }

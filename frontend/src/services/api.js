@@ -3,6 +3,8 @@ import { getAuthValue } from './authStorage';
 
 const API_HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || `http://${API_HOST}:8081/api`;
+const DEFAULT_BACKEND_WAIT_ATTEMPTS = 15;
+const DEFAULT_BACKEND_WAIT_DELAY_MS = 2000;
 
 const api = axios.create({
   baseURL: API_BASE
@@ -59,6 +61,29 @@ export const analyticsApi = {
 
 export const healthApi = {
   status: () => api.get('/health')
+};
+
+const sleep = (ms) => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
+
+export const waitForBackendReady = async ({ attempts = DEFAULT_BACKEND_WAIT_ATTEMPTS, delayMs = DEFAULT_BACKEND_WAIT_DELAY_MS } = {}) => {
+  for (let i = 0; i < attempts; i += 1) {
+    try {
+      const { data } = await api.get('/health', { timeout: 3000 });
+      if (data?.status === 'UP') {
+        return true;
+      }
+    } catch {
+      // Ignore transient startup failures and retry.
+    }
+
+    if (i < attempts - 1) {
+      await sleep(delayMs);
+    }
+  }
+
+  return false;
 };
 
 export const notificationApi = {
