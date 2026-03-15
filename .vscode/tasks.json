@@ -4,7 +4,7 @@
     {
       "label": "MediTrack Backend",
       "type": "shell",
-      "command": "mvn spring-boot:run",
+      "command": "cmd /d /c \"set JAVA_HOME=C:\\jdk\\jdk-21.0.8&& set PATH=C:\\jdk\\jdk-21.0.8\\bin;%PATH%&& mvn spring-boot:run\"",
       "options": {
         "cwd": "${workspaceFolder}/backend"
       },
