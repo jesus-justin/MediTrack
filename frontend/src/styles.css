@@ -1054,6 +1054,54 @@ td {
   font-size: 0.875rem;
 }
 
+.auth-health-badge {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.auth-health-badge__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.auth-health-badge--ready {
+  background: #ecfdf5;
+  border: 1px solid #86efac;
+  color: #166534;
+}
+
+.auth-health-badge--ready .auth-health-badge__dot {
+  background: #22c55e;
+}
+
+.auth-health-badge--starting,
+.auth-health-badge--checking {
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  color: #9a3412;
+}
+
+.auth-health-badge--starting .auth-health-badge__dot,
+.auth-health-badge--checking .auth-health-badge__dot {
+  background: #f97316;
+  animation: auth-health-pulse 1.3s ease-in-out infinite;
+}
+
+@keyframes auth-health-pulse {
+  0%,
+  100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+
 /* Alert banner */
 .auth-alert {
   display: flex;
