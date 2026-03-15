@@ -686,6 +686,14 @@ td {
   font-size: 14px;
 }
 
+.users-row {
+  cursor: pointer;
+}
+
+.users-row:hover {
+  background: rgba(42, 157, 143, 0.08);
+}
+
 .action-grid {
   display: grid;
   gap: 10px;
@@ -1895,6 +1903,66 @@ td {
 
 .btn-danger:hover {
   background: #a03c3e;
+}
+
+/* ── Patient chatbot ── */
+.patient-chat-card {
+  display: grid;
+  gap: 12px;
+}
+
+.patient-chat-log {
+  min-height: 240px;
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid rgba(20, 33, 61, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.patient-chat-msg {
+  display: flex;
+}
+
+.patient-chat-msg span {
+  max-width: min(90%, 680px);
+  padding: 9px 12px;
+  border-radius: 12px;
+  line-height: 1.4;
+  font-size: 0.92rem;
+}
+
+.patient-chat-msg.is-user {
+  justify-content: flex-end;
+}
+
+.patient-chat-msg.is-user span {
+  background: #0f766e;
+  color: #fff;
+}
+
+.patient-chat-msg.is-bot span {
+  background: rgba(20, 33, 61, 0.08);
+  color: var(--ink);
+}
+
+.patient-chat-typing {
+  font-size: 0.86rem;
+  color: rgba(20, 33, 61, 0.65);
+}
+
+.patient-chat-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.patient-chat-input-row button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ── Notifications ── */
