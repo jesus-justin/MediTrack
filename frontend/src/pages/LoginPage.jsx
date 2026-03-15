@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { authApi, waitForBackendReady } from '../services/api';
+import { authApi, healthApi, waitForBackendReady } from '../services/api';
 import { getAuthValue, setAuthSession } from '../services/authStorage';
 
 export default function LoginPage() {
@@ -9,9 +9,49 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const [backendStatus, setBackendStatus] = useState('CHECKING');
   const navigate = useNavigate();
 
   if (token) return <Navigate to="/app" replace />;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkBackend = async () => {
+      try {
+        const { data } = await healthApi.status();
+        if (!cancelled) {
+          setBackendStatus(data?.status === 'UP' ? 'READY' : 'STARTING');
+        }
+      } catch {
+        if (!cancelled) {
+          setBackendStatus('STARTING');
+        }
+      }
+    };
+
+    checkBackend();
+    const timer = setInterval(checkBackend, 10000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, []);
+
+  const backendBadgeClass =
+    backendStatus === 'READY'
+      ? 'auth-health-badge auth-health-badge--ready'
+      : backendStatus === 'CHECKING'
+        ? 'auth-health-badge auth-health-badge--checking'
+        : 'auth-health-badge auth-health-badge--starting';
+
+  const backendBadgeText =
+    backendStatus === 'READY'
+      ? 'System ready'
+      : backendStatus === 'CHECKING'
+        ? 'Checking backend'
+        : 'Backend starting';
 
   const submit = async (e) => {
     e.preventDefault();
@@ -120,6 +160,10 @@ export default function LoginPage() {
             <div>
               <h1>Welcome back</h1>
               <p>Sign in to your account to continue</p>
+              <div className={backendBadgeClass} aria-live="polite">
+                <span className="auth-health-badge__dot" />
+                {backendBadgeText}
+              </div>
             </div>
           </div>
 
