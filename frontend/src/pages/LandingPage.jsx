@@ -99,7 +99,7 @@ export default function LandingPage() {
           <p>{currentSlide.description}</p>
 
           <div className="hero-cta-row">
-            <Link to="/register" className="hero-cta primary">{currentSlide.ctaPrimary}</Link>
+            <Link to="/login" className="hero-cta primary">{currentSlide.ctaPrimary}</Link>
             <Link to="/login" className="hero-cta secondary">Sign In to Dashboard</Link>
           </div>
 
@@ -136,7 +136,7 @@ export default function LandingPage() {
         <p>Access Portal</p>
         <div>
           <Link to="/login" className="outline-btn">Login</Link>
-          <Link to="/register" className="solid-btn">Register</Link>
+          <span className="solid-btn">Admin-Created Accounts Only</span>
         </div>
       </section>
 
@@ -145,7 +145,8 @@ export default function LandingPage() {
           <h3>Welcome to MediTrack</h3>
           <p>
             MediTrack is a hospital workflow platform designed to keep care teams aligned from patient registration
-            to discharge, with clear records, coordinated appointments, and decision-ready analytics.
+            to discharge, with clear records, coordinated appointments, and decision-ready analytics. Staff accounts
+            are provisioned by administrators.
           </p>
         </article>
 

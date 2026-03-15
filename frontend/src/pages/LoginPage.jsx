@@ -202,7 +202,7 @@ export default function LoginPage() {
           </div>
 
           <div className="auth-footer">
-            <p>New to MediTrack? <Link to="/register">Create an account</Link></p>
+            <p>Need access? Contact an administrator to create your account.</p>
             <p><Link to="/">← Back to home</Link></p>
           </div>
         </div>

@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { getAuthValue } from './authStorage';
 
-const API_BASE = 'http://localhost:8080/api';
+const API_HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || `http://${API_HOST}:8081/api`;
 
 const api = axios.create({
   baseURL: API_BASE
@@ -16,8 +17,7 @@ api.interceptors.request.use((config) => {
 });
 
 export const authApi = {
-  login: (payload) => api.post('/auth/login', payload),
-  register: (payload) => api.post('/auth/register', payload)
+  login: (payload) => api.post('/auth/login', payload)
 };
 
 export const userApi = {
@@ -64,6 +64,10 @@ export const healthApi = {
 export const notificationApi = {
   doctorUpcoming: () => api.get('/notifications/doctor-upcoming'),
   patientReminders: () => api.get('/notifications/patient-reminders')
+};
+
+export const patientChatApi = {
+  message: (payload) => api.post('/patient-chatbot/message', payload)
 };
 
 export const adminAnalyticsApi = {
