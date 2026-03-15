@@ -14,12 +14,15 @@ spring:
         format_sql: true
 
 server:
-  port: 8080
+  port: 8081
 
 app:
   jwt:
     secret: meditrack-super-secure-jwt-signing-key-2026-example
     expiration-ms: 86400000
+  ai:
+    gemini-api-key: ${GEMINI_API_KEY:}
+    model: gemini-2.0-flash
 
 cors:
-  allowed-origins: http://localhost:5173,http://localhost:3000
+  allowed-origins: http://localhost:*,http://127.0.0.1:*,http://192.168.*:*,http://10.*.*.*:*,http://172.*.*.*:*
