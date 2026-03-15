@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { userApi } from '../services/api';
 import { getAuthValue } from '../services/authStorage';
@@ -20,6 +20,8 @@ export default function UsersPage() {
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const formSectionRef = useRef(null);
+  const usernameInputRef = useRef(null);
 
   const load = async () => {
     const { data } = await userApi.list();
@@ -70,6 +72,12 @@ export default function UsersPage() {
     });
     setError('');
     setSuccess('');
+
+    // Bring the edit form into view so the action is always visible to the user.
+    requestAnimationFrame(() => {
+      formSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      usernameInputRef.current?.focus();
+    });
   };
 
   const deleteUser = async (user) => {
@@ -94,9 +102,10 @@ export default function UsersPage() {
         <p>Create, update, and remove platform users across all four roles.</p>
       </header>
 
-      <section className="card">
+      <section className="card" ref={formSectionRef}>
         <form className="form-grid" onSubmit={submit}>
           <input
+            ref={usernameInputRef}
             placeholder="Username"
             value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value })}
@@ -155,7 +164,7 @@ export default function UsersPage() {
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id}>
+                <tr key={user.id} className="users-row" onClick={() => editUser(user)}>
                   <td>{user.username}</td>
                   <td>{user.email}</td>
                   <td>{user.role}</td>
@@ -163,8 +172,18 @@ export default function UsersPage() {
                   <td>{user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A'}</td>
                   <td>
                     <div className="table-actions">
-                      <button type="button" onClick={() => editUser(user)}>Edit</button>
-                      <button type="button" onClick={() => deleteUser(user)}>Delete</button>
+                      <button type="button" onClick={(e) => {
+                        e.stopPropagation();
+                        editUser(user);
+                      }}>
+                        Edit
+                      </button>
+                      <button type="button" onClick={(e) => {
+                        e.stopPropagation();
+                        deleteUser(user);
+                      }}>
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
