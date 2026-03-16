@@ -23,6 +23,15 @@ body {
   min-height: 100vh;
 }
 
+.page-loader {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  color: rgba(20, 33, 61, 0.7);
+}
+
 h1,
 h2,
 h3,
