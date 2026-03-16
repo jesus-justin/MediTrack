@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   adminAnalyticsApi,
@@ -12,9 +12,12 @@ import {
   patientApi,
   userApi
 } from '../services/api';
-import { BarChartCard, DoughnutChartCard, LineChartCard } from '../components/ChartCard';
-import PatientChatbotCard from '../components/PatientChatbotCard';
 import { getAuthValue } from '../services/authStorage';
+
+const BarChartCard = lazy(() => import('../components/ChartCard').then((module) => ({ default: module.BarChartCard })));
+const DoughnutChartCard = lazy(() => import('../components/ChartCard').then((module) => ({ default: module.DoughnutChartCard })));
+const LineChartCard = lazy(() => import('../components/ChartCard').then((module) => ({ default: module.LineChartCard })));
+const PatientChatbotCard = lazy(() => import('../components/PatientChatbotCard'));
 
 const DOCTOR_PROFILE_KEY = 'doctorDashboardProfile';
 const DOCTOR_SCRATCHPAD_KEY = 'doctorDashboardScratchpad';
@@ -105,22 +108,19 @@ export default function DashboardPage() {
     setRefreshing(true);
     try {
       const [
-        patientsRes, doctorsRes, appointmentsRes, consultationsRes,
-        analyticsRes, usersRes, healthRes, doctorNotifRes,
-        patientNotifRes, sysStatsRes, auditRes, reportsRes
+        patientsRes,
+        doctorsRes,
+        appointmentsRes,
+        consultationsRes,
+        analyticsRes,
+        healthRes
       ] = await Promise.allSettled([
         patientApi.list(''),
         doctorApi.list(''),
         appointmentApi.list(),
         consultationApi.list(),
         analyticsApi.dashboard(),
-        role === 'ADMIN' ? userApi.list() : Promise.resolve({ data: [] }),
-        healthApi.status(),
-        notificationApi.doctorUpcoming(),
-        notificationApi.patientReminders(),
-        role === 'ADMIN' ? adminAnalyticsApi.systemStats() : Promise.resolve({ data: {} }),
-        role === 'ADMIN' ? adminPanelApi.audit(20) : Promise.resolve({ data: [] }),
-        role === 'ADMIN' ? adminPanelApi.reportsSummary() : Promise.resolve({ data: null })
+        healthApi.status()
       ]);
 
       const patients = patientsRes.status === 'fulfilled' ? patientsRes.value.data : [];
@@ -128,21 +128,10 @@ export default function DashboardPage() {
       const appointments = appointmentsRes.status === 'fulfilled' ? appointmentsRes.value.data : [];
       const consultations = consultationsRes.status === 'fulfilled' ? consultationsRes.value.data : [];
       const analytics = analyticsRes.status === 'fulfilled' ? analyticsRes.value.data : {};
-      const adminUsers = usersRes.status === 'fulfilled' ? usersRes.value.data : [];
       const apiHealth = healthRes.status === 'fulfilled' ? healthRes.value.data : { status: 'DOWN', service: 'MediTrack API' };
-      const doctorUpcoming = doctorNotifRes.status === 'fulfilled' ? doctorNotifRes.value.data : [];
-      const patientReminders = patientNotifRes.status === 'fulfilled' ? patientNotifRes.value.data : [];
-      const stats = sysStatsRes.status === 'fulfilled' ? sysStatsRes.value.data : {};
-      const audit = auditRes.status === 'fulfilled' ? auditRes.value.data : [];
-      const reportSummary = reportsRes.status === 'fulfilled' ? reportsRes.value.data : null;
 
       setDashboard(analytics);
-      setUsers(adminUsers);
       setHealth(apiHealth);
-      setNotifications({ doctorUpcoming, patientReminders });
-      setSystemStats(stats);
-      setAuditLogs(audit);
-      setReports(reportSummary);
       setAllDoctors(doctors);
       setAllAppointments(appointments);
       setAllConsultations(consultations);
@@ -151,13 +140,48 @@ export default function DashboardPage() {
         doctors: doctors.length,
         appointments: appointments.length,
         consultations: consultations.length,
-        users: adminUsers.length,
-        enabledUsers: adminUsers.filter((u) => u.enabled).length,
-        disabledUsers: adminUsers.filter((u) => !u.enabled).length,
+        users: 0,
+        enabledUsers: 0,
+        disabledUsers: 0,
         confirmedAppointments: appointments.filter((a) => a.status === 'CONFIRMED').length,
         pendingAppointments: appointments.filter((a) => a.status === 'PENDING').length,
         completedAppointments: appointments.filter((a) => a.status === 'COMPLETED').length,
         canceledAppointments: appointments.filter((a) => a.status === 'CANCELED').length
+      });
+
+      Promise.allSettled([
+        role === 'ADMIN' ? userApi.list() : Promise.resolve({ data: [] }),
+        notificationApi.doctorUpcoming(),
+        notificationApi.patientReminders(),
+        role === 'ADMIN' ? adminAnalyticsApi.systemStats() : Promise.resolve({ data: {} }),
+        role === 'ADMIN' ? adminPanelApi.audit(20) : Promise.resolve({ data: [] }),
+        role === 'ADMIN' ? adminPanelApi.reportsSummary() : Promise.resolve({ data: null })
+      ]).then(([
+        usersRes,
+        doctorNotifRes,
+        patientNotifRes,
+        sysStatsRes,
+        auditRes,
+        reportsRes
+      ]) => {
+        const adminUsers = usersRes.status === 'fulfilled' ? usersRes.value.data : [];
+        const doctorUpcoming = doctorNotifRes.status === 'fulfilled' ? doctorNotifRes.value.data : [];
+        const patientReminders = patientNotifRes.status === 'fulfilled' ? patientNotifRes.value.data : [];
+        const stats = sysStatsRes.status === 'fulfilled' ? sysStatsRes.value.data : {};
+        const audit = auditRes.status === 'fulfilled' ? auditRes.value.data : [];
+        const reportSummary = reportsRes.status === 'fulfilled' ? reportsRes.value.data : null;
+
+        setUsers(adminUsers);
+        setNotifications({ doctorUpcoming, patientReminders });
+        setSystemStats(stats);
+        setAuditLogs(audit);
+        setReports(reportSummary);
+        setSummary((previous) => ({
+          ...previous,
+          users: adminUsers.length,
+          enabledUsers: adminUsers.filter((u) => u.enabled).length,
+          disabledUsers: adminUsers.filter((u) => !u.enabled).length
+        }));
       });
 
       if (role === 'DOCTOR' && !selectedDoctorName && doctors.length > 0) {
@@ -863,18 +887,20 @@ export default function DashboardPage() {
           </section>
 
           {/* ── Admin Charts ── */}
-          <div className="chart-grid">
-            <DoughnutChartCard
-              title="Appointment Status Distribution"
-              labels={adminStatusChart.labels}
-              values={adminStatusChart.values}
-            />
-            <BarChartCard
-              title="User Role Composition"
-              labels={userRoleDistribution.labels}
-              values={userRoleDistribution.values}
-            />
-          </div>
+          <Suspense fallback={<section className="card"><small>Loading charts...</small></section>}>
+            <div className="chart-grid">
+              <DoughnutChartCard
+                title="Appointment Status Distribution"
+                labels={adminStatusChart.labels}
+                values={adminStatusChart.values}
+              />
+              <BarChartCard
+                title="User Role Composition"
+                labels={userRoleDistribution.labels}
+                values={userRoleDistribution.values}
+              />
+            </div>
+          </Suspense>
         </>
       ) : (
         /* ════════════════════════════╗
@@ -1009,12 +1035,14 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <div className="chart-grid">
-            <LineChartCard title="Appointment Trends" labels={trend.labels} values={trend.values} />
-            <BarChartCard title="Doctor Utilization" labels={utilization.labels} values={utilization.values} />
-            <DoughnutChartCard title="Common Diagnoses" labels={diagnosis.labels} values={diagnosis.values} />
-            <DoughnutChartCard title="Gender Breakdown" labels={Object.keys(gender)} values={Object.values(gender)} />
-          </div>
+          <Suspense fallback={<section className="card"><small>Loading charts...</small></section>}>
+            <div className="chart-grid">
+              <LineChartCard title="Appointment Trends" labels={trend.labels} values={trend.values} />
+              <BarChartCard title="Doctor Utilization" labels={utilization.labels} values={utilization.values} />
+              <DoughnutChartCard title="Common Diagnoses" labels={diagnosis.labels} values={diagnosis.values} />
+              <DoughnutChartCard title="Gender Breakdown" labels={Object.keys(gender)} values={Object.values(gender)} />
+            </div>
+          </Suspense>
 
           <section className="card chart-card">
             <h3>Peak Hours Heatmap (Simplified)</h3>
@@ -1032,7 +1060,11 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          {role === 'PATIENT' ? <PatientChatbotCard /> : null}
+          {role === 'PATIENT' ? (
+            <Suspense fallback={<section className="card"><small>Loading assistant...</small></section>}>
+              <PatientChatbotCard />
+            </Suspense>
+          ) : null}
         </>
       )}
     </div>
