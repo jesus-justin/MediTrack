@@ -3,11 +3,12 @@ import { getAuthValue } from './authStorage';
 
 const API_HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || `http://${API_HOST}:8081/api`;
-const DEFAULT_BACKEND_WAIT_ATTEMPTS = 15;
-const DEFAULT_BACKEND_WAIT_DELAY_MS = 2000;
+const DEFAULT_BACKEND_WAIT_TIMEOUT_MS = 3000;
+const DEFAULT_BACKEND_WAIT_INTERVAL_MS = 250;
 
 const api = axios.create({
-  baseURL: API_BASE
+  baseURL: API_BASE,
+  timeout: 5000
 });
 
 api.interceptors.request.use((config) => {
@@ -60,17 +61,19 @@ export const analyticsApi = {
 };
 
 export const healthApi = {
-  status: () => api.get('/health')
+  status: (config) => api.get('/health', config)
 };
 
 const sleep = (ms) => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });
 
-export const waitForBackendReady = async ({ attempts = DEFAULT_BACKEND_WAIT_ATTEMPTS, delayMs = DEFAULT_BACKEND_WAIT_DELAY_MS } = {}) => {
-  for (let i = 0; i < attempts; i += 1) {
+export const waitForBackendReady = async ({ timeoutMs = DEFAULT_BACKEND_WAIT_TIMEOUT_MS, intervalMs = DEFAULT_BACKEND_WAIT_INTERVAL_MS } = {}) => {
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
     try {
-      const { data } = await api.get('/health', { timeout: 3000 });
+      const { data } = await api.get('/health', { timeout: 1200 });
       if (data?.status === 'UP') {
         return true;
       }
@@ -78,9 +81,7 @@ export const waitForBackendReady = async ({ attempts = DEFAULT_BACKEND_WAIT_ATTE
       // Ignore transient startup failures and retry.
     }
 
-    if (i < attempts - 1) {
-      await sleep(delayMs);
-    }
+    await sleep(intervalMs);
   }
 
   return false;

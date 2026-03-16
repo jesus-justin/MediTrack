@@ -16,26 +16,31 @@ export default function LoginPage() {
 
   useEffect(() => {
     let cancelled = false;
+    let timer;
 
     const checkBackend = async () => {
       try {
-        const { data } = await healthApi.status();
+        const { data } = await healthApi.status({ timeout: 1000 });
         if (!cancelled) {
-          setBackendStatus(data?.status === 'UP' ? 'READY' : 'STARTING');
+          const nextStatus = data?.status === 'UP' ? 'READY' : 'STARTING';
+          setBackendStatus(nextStatus);
+          timer = setTimeout(checkBackend, nextStatus === 'READY' ? 15000 : 1200);
         }
       } catch {
         if (!cancelled) {
           setBackendStatus('STARTING');
+          timer = setTimeout(checkBackend, 1200);
         }
       }
     };
 
     checkBackend();
-    const timer = setInterval(checkBackend, 10000);
 
     return () => {
       cancelled = true;
-      clearInterval(timer);
+      if (timer) {
+        clearTimeout(timer);
+      }
     };
   }, []);
 
@@ -63,7 +68,7 @@ export default function LoginPage() {
       navigate('/app');
     } catch (err) {
       if (!err?.response) {
-        const backendReady = await waitForBackendReady();
+        const backendReady = await waitForBackendReady({ timeoutMs: 3000, intervalMs: 250 });
         if (backendReady) {
           try {
             const { data } = await authApi.login(form);
