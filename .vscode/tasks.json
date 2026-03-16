@@ -4,7 +4,7 @@
     {
       "label": "MediTrack Backend",
       "type": "shell",
-      "command": "$env:JAVA_HOME='C:\\jdk\\jdk-21.0.8'; $env:PATH='C:\\jdk\\jdk-21.0.8\\bin;' + $env:PATH; mvn spring-boot:run",
+      "command": "$env:JAVA_HOME='C:\\jdk\\jdk-21.0.8'; $env:PATH='C:\\jdk\\jdk-21.0.8\\bin;' + $env:PATH; $jar=Get-ChildItem -Path .\\target -Filter '*.jar' -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -notmatch '\\.original$' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1; $needsBuild=$true; if ($jar) { $jarTime=$jar.LastWriteTime; $newerSrc=Get-ChildItem .\\src\\main -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -gt $jarTime } | Select-Object -First 1; $pomNewer=(Get-Item .\\pom.xml -ErrorAction SilentlyContinue).LastWriteTime -gt $jarTime; $needsBuild=($null -ne $newerSrc) -or $pomNewer }; if ($needsBuild) { mvn -q -DskipTests package; $jar=Get-ChildItem -Path .\\target -Filter '*.jar' -File | Where-Object { $_.Name -notmatch '\\.original$' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1 }; if (-not $jar) { throw 'No runnable backend JAR found in backend/target' }; java -jar $jar.FullName",
       "options": {
         "cwd": "${workspaceFolder}/backend"
       },

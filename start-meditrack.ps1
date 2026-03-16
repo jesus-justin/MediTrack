@@ -75,6 +75,64 @@ function Test-BackendHealthy {
   }
 }
 
+function Get-BackendRunnableJar {
+  $targetDir = Join-Path $backendPath 'target'
+  if (-not (Test-Path $targetDir)) {
+    return $null
+  }
+
+  $jar = Get-ChildItem -Path $targetDir -Filter '*.jar' -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -notmatch '\.original$' } |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+
+  if ($jar) {
+    return $jar.FullName
+  }
+
+  return $null
+}
+
+function Test-BackendBuildRequired {
+  param([string]$JarPath)
+
+  if (-not $JarPath) {
+    return $true
+  }
+
+  try {
+    $jarTime = (Get-Item -Path $JarPath -ErrorAction Stop).LastWriteTime
+  } catch {
+    return $true
+  }
+
+  $pathsToCheck = @(
+    (Join-Path $backendPath 'pom.xml'),
+    (Join-Path $backendPath 'src\main')
+  )
+
+  foreach ($path in $pathsToCheck) {
+    if (-not (Test-Path $path)) {
+      continue
+    }
+
+    if ((Get-Item $path).PSIsContainer) {
+      $newerFile = Get-ChildItem -Path $path -Recurse -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.LastWriteTime -gt $jarTime } |
+        Select-Object -First 1
+      if ($newerFile) {
+        return $true
+      }
+    } else {
+      if ((Get-Item -Path $path -ErrorAction SilentlyContinue).LastWriteTime -gt $jarTime) {
+        return $true
+      }
+    }
+  }
+
+  return $false
+}
+
 function Wait-ForPort {
   param(
     [int]$Port,
@@ -138,8 +196,41 @@ function Start-BackendIfNeeded {
   }
 
   $backendLog = Join-Path $logDir 'backend.log'
+
+  $jarPath = Get-BackendRunnableJar
+  $needsBuild = Test-BackendBuildRequired -JarPath $jarPath
+  if ($needsBuild) {
+    if ($jarPath) {
+      Write-Host 'Backend source changed since last package. Updating JAR (skip tests)...' -ForegroundColor Yellow
+    } else {
+      Write-Host 'Backend JAR not found. Building once with Maven (skip tests)...' -ForegroundColor Yellow
+    }
+
+    $buildCommand = @"
+set "JAVA_HOME=$javaHome" && set "PATH=$javaHome\bin;%PATH%" && cd /d "$backendPath" && mvn -q -DskipTests package >> "$backendLog" 2>&1
+"@.Trim()
+
+    $buildExitCode = (Start-Process cmd.exe -ArgumentList @(
+      '/d',
+      '/c',
+      $buildCommand
+    ) -NoNewWindow -Wait -PassThru).ExitCode
+
+    if ($buildExitCode -ne 0) {
+      Write-Host "Backend build failed (exit code $buildExitCode). Check logs in: $backendLog" -ForegroundColor Red
+      return
+    }
+
+    $jarPath = Get-BackendRunnableJar
+  }
+
+  if (-not $jarPath) {
+    Write-Host "Backend JAR is still missing after build. Check logs in: $backendLog" -ForegroundColor Red
+    return
+  }
+
   $backendCommand = @"
-set "JAVA_HOME=$javaHome" && set "PATH=$javaHome\bin;%PATH%" && cd /d "$backendPath" && mvn spring-boot:run >> "$backendLog" 2>&1
+set "JAVA_HOME=$javaHome" && set "PATH=$javaHome\bin;%PATH%" && cd /d "$backendPath" && java -jar "$jarPath" >> "$backendLog" 2>&1
 "@.Trim()
   Start-Process cmd.exe -WindowStyle Hidden -ArgumentList @(
     '/d',
@@ -147,7 +238,7 @@ set "JAVA_HOME=$javaHome" && set "PATH=$javaHome\bin;%PATH%" && cd /d "$backendP
     $backendCommand
   ) | Out-Null
 
-  Write-Host "Backend startup triggered with JAVA_HOME=$javaHome." -ForegroundColor Cyan
+  Write-Host "Backend startup triggered from JAR: $jarPath" -ForegroundColor Cyan
 }
 
 function Start-FrontendIfNeeded {
