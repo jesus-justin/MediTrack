@@ -84,6 +84,10 @@ mvn spring-boot:run
 ```
 3. API base URL: `http://localhost:8081/api`
 
+Startup speed note:
+- `start-meditrack.ps1` and the VS Code task now use a JAR-first boot path.
+- First run builds once (`mvn -DskipTests clean package`), then later restarts use `java -jar` for faster backend startup.
+
 Default seeded admin account:
 - Username: `admin`
 - Password: `Admin@123`
