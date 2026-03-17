@@ -8,7 +8,7 @@ const DEFAULT_BACKEND_WAIT_INTERVAL_MS = 250;
 
 const api = axios.create({
   baseURL: API_BASE,
-  timeout: 5000
+  timeout: 3000
 });
 
 api.interceptors.request.use((config) => {
