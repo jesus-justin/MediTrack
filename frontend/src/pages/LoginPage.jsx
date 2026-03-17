@@ -24,12 +24,12 @@ export default function LoginPage() {
         if (!cancelled) {
           const nextStatus = data?.status === 'UP' ? 'READY' : 'STARTING';
           setBackendStatus(nextStatus);
-          timer = setTimeout(checkBackend, nextStatus === 'READY' ? 15000 : 1200);
+          timer = setTimeout(checkBackend, nextStatus === 'READY' ? 15000 : 800);
         }
       } catch {
         if (!cancelled) {
           setBackendStatus('STARTING');
-          timer = setTimeout(checkBackend, 1200);
+          timer = setTimeout(checkBackend, 800);
         }
       }
     };
