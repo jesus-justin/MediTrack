@@ -3,6 +3,8 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { authApi, healthApi } from '../services/api';
 import { getAuthValue, setAuthSession } from '../services/authStorage';
 
+const SERVER_UNREACHABLE_MESSAGE = 'Cannot reach server. MediTrack services are not running yet. Use start-meditrack.ps1 or enable auto-start.';
+
 export default function LoginPage() {
   const token = getAuthValue('token');
   const [form, setForm] = useState({ username: 'admin', password: 'Admin@123' });
@@ -24,6 +26,9 @@ export default function LoginPage() {
         if (!cancelled) {
           const nextStatus = data?.status === 'UP' ? 'READY' : 'STARTING';
           setBackendStatus(nextStatus);
+          if (nextStatus === 'READY') {
+            setError((current) => (current === SERVER_UNREACHABLE_MESSAGE ? '' : current));
+          }
           timer = setTimeout(checkBackend, nextStatus === 'READY' ? 15000 : 800);
         }
       } catch {
@@ -69,7 +74,7 @@ export default function LoginPage() {
     } catch (err) {
       if (!err?.response) {
         setBackendStatus('STARTING');
-        setError('Cannot reach server. MediTrack services are not running yet. Use start-meditrack.ps1 or enable auto-start.');
+        setError(SERVER_UNREACHABLE_MESSAGE);
       } else {
         setError(err?.response?.data?.error || 'Login failed');
       }
