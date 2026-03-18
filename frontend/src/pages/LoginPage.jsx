@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { authApi, healthApi } from '../services/api';
+import { authApi, healthApi, waitForBackendReady } from '../services/api';
 import { getAuthValue, setAuthSession } from '../services/authStorage';
 
 const SERVER_UNREACHABLE_MESSAGE = 'Cannot reach server. MediTrack services are not running yet. Use start-meditrack.ps1 or enable auto-start.';
@@ -74,7 +74,24 @@ export default function LoginPage() {
     } catch (err) {
       if (!err?.response) {
         setBackendStatus('STARTING');
-        setError(SERVER_UNREACHABLE_MESSAGE);
+        // If backend is still booting, wait briefly and retry once automatically.
+        const isReady = await waitForBackendReady({ timeoutMs: 20000, intervalMs: 500 });
+        if (isReady) {
+          try {
+            const { data } = await authApi.login(form);
+            setAuthSession(data);
+            navigate('/app');
+            return;
+          } catch (retryErr) {
+            if (retryErr?.response) {
+              setError(retryErr?.response?.data?.error || 'Login failed');
+            } else {
+              setError(SERVER_UNREACHABLE_MESSAGE);
+            }
+          }
+        } else {
+          setError(SERVER_UNREACHABLE_MESSAGE);
+        }
       } else {
         setError(err?.response?.data?.error || 'Login failed');
       }
