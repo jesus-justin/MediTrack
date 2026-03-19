@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import DataTable from '../components/DataTable';
-import { patientApi } from '../services/api';
+import { appointmentApi, patientApi } from '../services/api';
 import { getAuthValue } from '../services/authStorage';
 
 export default function PatientsPage() {
   const role = getAuthValue('role') || 'RECEPTIONIST';
+  const username = getAuthValue('username') || '';
   const canManagePatients = role === 'ADMIN' || role === 'RECEPTIONIST';
   const [patients, setPatients] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [q, setQ] = useState('');
   const [form, setForm] = useState({
     firstName: '',
@@ -20,8 +22,24 @@ export default function PatientsPage() {
     medicalHistory: ''
   });
 
-  const load = () => patientApi.list(q).then(({ data }) => setPatients(data));
+  const load = async () => {
+    const [patientRes, appointmentRes] = await Promise.all([
+      patientApi.list(q),
+      appointmentApi.list()
+    ]);
+    setPatients(patientRes.data || []);
+    setAppointments(appointmentRes.data || []);
+  };
   useEffect(() => { load(); }, []);
+
+  const scopedPatients = role === 'DOCTOR'
+    ? patients.filter((patient) => {
+      return appointments.some((appointment) =>
+        appointment.patient?.id === patient.id
+        && String(appointment.doctor?.fullName || '').toLowerCase().includes(username.toLowerCase())
+      );
+    })
+    : patients;
 
   const create = async (e) => {
     e.preventDefault();
@@ -44,7 +62,9 @@ export default function PatientsPage() {
             <input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             <input placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
             <input placeholder="Insurance" value={form.insuranceProvider} onChange={(e) => setForm({ ...form, insuranceProvider: e.target.value })} />
-            <textarea placeholder="Medical history" value={form.medicalHistory} onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })} />
+            {role === 'ADMIN' ? (
+              <textarea placeholder="Medical history" value={form.medicalHistory} onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })} />
+            ) : null}
             <button type="submit">Register Patient</button>
           </form>
         </section>
@@ -56,7 +76,7 @@ export default function PatientsPage() {
       </section>
 
       <DataTable
-        title="Patients"
+        title={role === 'DOCTOR' ? 'My Patients' : 'Patients'}
         columns={[
           { key: 'patientCode', label: 'Patient ID' },
           { key: 'firstName', label: 'First Name' },
@@ -64,7 +84,7 @@ export default function PatientsPage() {
           { key: 'gender', label: 'Gender' },
           { key: 'insuranceProvider', label: 'Insurance' }
         ]}
-        data={patients}
+        data={scopedPatients}
       />
     </div>
   );

@@ -13,6 +13,7 @@ import {
   userApi
 } from '../services/api';
 import { getAuthValue } from '../services/authStorage';
+import { getActiveAnnouncementsForRole } from '../services/scheduleCoordination';
 
 const BarChartCard = lazy(() => import('../components/ChartCard').then((module) => ({ default: module.BarChartCard })));
 const DoughnutChartCard = lazy(() => import('../components/ChartCard').then((module) => ({ default: module.DoughnutChartCard })));
@@ -103,6 +104,7 @@ export default function DashboardPage() {
   const [doctorScratchpad, setDoctorScratchpad] = useState(
     () => localStorage.getItem(DOCTOR_SCRATCHPAD_KEY) || ''
   );
+  const [announcements, setAnnouncements] = useState([]);
 
   const load = async () => {
     setRefreshing(true);
@@ -200,6 +202,10 @@ export default function DashboardPage() {
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    setAnnouncements(getActiveAnnouncementsForRole(role));
+  }, [role]);
 
   // ── charts used by non-admin roles ──────────────────────────────────────
   const trend = useMemo(() => {
@@ -502,6 +508,23 @@ export default function DashboardPage() {
           </button>
         </div>
       </header>
+
+      {announcements.length > 0 ? (
+        <section className="card">
+          <h3>Announcements</h3>
+          <ul className="notif-list">
+            {announcements.slice(0, 3).map((item) => (
+              <li key={item.id} className="notif-item">
+                <div className="notif-item-header">
+                  <strong>{item.title}</strong>
+                  {item.expiresAt ? <small className="muted">Expires: {new Date(item.expiresAt).toLocaleDateString()}</small> : null}
+                </div>
+                <p className="notif-message">{item.content}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {role === 'ADMIN' ? (
         /* ══════════════════════════╗

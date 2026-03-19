@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { appointmentApi, doctorApi } from '../services/api';
 import { getAuthValue } from '../services/authStorage';
+import { applyAvailabilityToSlots } from '../services/scheduleCoordination';
 
 function formatDateTime(value) {
   if (!value) return '-';
@@ -78,9 +79,11 @@ export default function ReceptionDeskPage() {
         durationMinutes: Number(slotFilter.durationMinutes),
         limit: Number(slotFilter.limit)
       });
-      setSlots(data.slots || []);
-      if (!data.slots?.length) {
-        setMessage('No available slots in the selected window.');
+      const selectedDoctor = doctors.find((doctor) => String(doctor.id) === String(slotFilter.doctorId));
+      const filteredSlots = applyAvailabilityToSlots(data.slots || [], selectedDoctor?.fullName);
+      setSlots(filteredSlots);
+      if (!filteredSlots.length) {
+        setMessage('No available slots in the selected window that match doctor availability.');
       }
     } catch (err) {
       setError(err?.response?.data?.message || err?.response?.data?.error || 'Could not load available slots.');

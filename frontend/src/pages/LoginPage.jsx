@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { authApi, healthApi, waitForBackendReady } from '../services/api';
 import { getAuthValue, setAuthSession } from '../services/authStorage';
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [backendStatus, setBackendStatus] = useState('CHECKING');
+  const warmupPromiseRef = useRef(null);
   const navigate = useNavigate();
 
   if (token) return <Navigate to="/app" replace />;
@@ -19,6 +20,17 @@ export default function LoginPage() {
   useEffect(() => {
     let cancelled = false;
     let timer;
+
+    const ensureBackendReady = () => {
+      if (!warmupPromiseRef.current) {
+        warmupPromiseRef.current = waitForBackendReady({ timeoutMs: 45000, intervalMs: 350 })
+          .finally(() => {
+            warmupPromiseRef.current = null;
+          });
+      }
+
+      return warmupPromiseRef.current;
+    };
 
     const checkBackend = async () => {
       try {
@@ -34,6 +46,7 @@ export default function LoginPage() {
       } catch {
         if (!cancelled) {
           setBackendStatus('STARTING');
+          ensureBackendReady();
           timer = setTimeout(checkBackend, 800);
         }
       }
@@ -68,14 +81,30 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
+      if (backendStatus !== 'READY') {
+        const pendingWarmup = warmupPromiseRef.current || waitForBackendReady({ timeoutMs: 45000, intervalMs: 350 });
+        warmupPromiseRef.current = pendingWarmup;
+
+        const isReady = await pendingWarmup;
+        if (!isReady) {
+          setBackendStatus('STARTING');
+          setError(SERVER_UNREACHABLE_MESSAGE);
+          return;
+        }
+
+        setBackendStatus('READY');
+      }
+
       const { data } = await authApi.login(form);
       setAuthSession(data);
       navigate('/app');
     } catch (err) {
       if (!err?.response) {
         setBackendStatus('STARTING');
-        // If backend is still booting, wait briefly and retry once automatically.
-        const isReady = await waitForBackendReady({ timeoutMs: 20000, intervalMs: 500 });
+        // If backend is still booting, reuse pending warm-up and retry once automatically.
+        const pendingWarmup = warmupPromiseRef.current || waitForBackendReady({ timeoutMs: 45000, intervalMs: 350 });
+        warmupPromiseRef.current = pendingWarmup;
+        const isReady = await pendingWarmup;
         if (isReady) {
           try {
             const { data } = await authApi.login(form);

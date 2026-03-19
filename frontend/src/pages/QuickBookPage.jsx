@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { appointmentApi, doctorApi, patientApi } from '../services/api';
 import { getAuthValue } from '../services/authStorage';
+import { applyAvailabilityToSlots } from '../services/scheduleCoordination';
 
 function formatDateTime(value) {
   if (!value) return '—';
@@ -47,8 +48,12 @@ export default function QuickBookPage() {
         durationMinutes: Number(form.durationMinutes),
         limit: 8
       });
-      setSlots(data.slots || []);
-      if (!data.slots?.length) setMessage('No available slots found for this selection.');
+      const selectedDoctor = doctors.find((doctor) => String(doctor.id) === String(form.doctorId));
+      const filteredSlots = applyAvailabilityToSlots(data.slots || [], selectedDoctor?.fullName);
+      setSlots(filteredSlots);
+      if (!filteredSlots.length) {
+        setMessage('No slots match the doctor schedule (availability and blocked times).');
+      }
     } catch (err) {
       setError(err?.response?.data?.message || err?.response?.data?.error || 'Could not load slots.');
     }

@@ -5,8 +5,8 @@ import { getAuthValue } from '../services/authStorage';
 
 export default function ConsultationsPage() {
   const role = getAuthValue('role') || 'RECEPTIONIST';
-  const canCreateConsultation = role === 'ADMIN' || role === 'DOCTOR';
-  const canViewTimeline = role === 'ADMIN' || role === 'RECEPTIONIST' || role === 'DOCTOR' || role === 'PATIENT';
+  const canCreateConsultation = role === 'DOCTOR';
+  const canViewTimeline = role === 'ADMIN' || role === 'DOCTOR' || role === 'PATIENT';
   const [appointmentId, setAppointmentId] = useState('');
   const [patientId, setPatientId] = useState('');
   const [timeline, setTimeline] = useState([]);
@@ -37,9 +37,9 @@ export default function ConsultationsPage() {
             <input placeholder="Appointment ID" value={appointmentId} onChange={(e) => setAppointmentId(e.target.value)} required />
             <input placeholder="Diagnosis" value={form.diagnosis} onChange={(e) => setForm({ ...form, diagnosis: e.target.value })} required />
             <textarea placeholder="Prescription" value={form.prescription} onChange={(e) => setForm({ ...form, prescription: e.target.value })} />
-            <textarea placeholder="Clinical notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+            <textarea placeholder="SOAP / clinical notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             <input placeholder="Attachment URL" value={form.attachmentUrl} onChange={(e) => setForm({ ...form, attachmentUrl: e.target.value })} />
-            <button type="submit">Log Consultation</button>
+            <button type="submit">Sign & Save Consultation</button>
           </form>
         </section>
       ) : null}
