@@ -97,6 +97,425 @@ nav a:hover {
   animation: rise 0.5s ease;
 }
 
+.app-shell[class*='app-shell--'] {
+  --role-primary: #0f766e;
+  --role-secondary: #0891b2;
+  --role-soft: rgba(15, 118, 110, 0.13);
+  --role-text-strong: #0f172a;
+  --role-surface: rgba(255, 255, 255, 0.74);
+}
+
+.app-shell--admin {
+  --role-primary: #8a4f08;
+  --role-secondary: #1f2937;
+  --role-soft: rgba(217, 119, 6, 0.16);
+  --role-surface: rgba(255, 251, 235, 0.74);
+}
+
+.app-shell--doctor {
+  --role-primary: #0f766e;
+  --role-secondary: #0b7285;
+  --role-soft: rgba(13, 148, 136, 0.16);
+  --role-surface: rgba(236, 254, 255, 0.74);
+}
+
+.app-shell--patient {
+  --role-primary: #0369a1;
+  --role-secondary: #0f766e;
+  --role-soft: rgba(3, 105, 161, 0.14);
+  --role-surface: rgba(240, 249, 255, 0.78);
+}
+
+.app-shell--receptionist {
+  --role-primary: #be123c;
+  --role-secondary: #b45309;
+  --role-soft: rgba(244, 63, 94, 0.13);
+  --role-surface: rgba(255, 241, 242, 0.74);
+}
+
+.app-shell--receptionist .content {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(244, 63, 94, 0.2), transparent 34%),
+    radial-gradient(circle at 88% 20%, rgba(245, 158, 11, 0.18), transparent 30%),
+    linear-gradient(145deg, #fff7ed, #fff1f2 48%, #fff8e1);
+}
+
+.app-shell[class*='app-shell--'] .sidebar {
+  background: linear-gradient(180deg, var(--role-surface), rgba(255, 255, 255, 0.58));
+}
+
+.app-shell[class*='app-shell--'] nav a.active,
+.app-shell[class*='app-shell--'] nav a:hover {
+  background: var(--role-soft);
+}
+
+.app-shell[class*='app-shell--'] .profile-box {
+  background: linear-gradient(150deg, var(--role-soft), rgba(255, 255, 255, 0.56));
+  border: 1px solid rgba(20, 33, 61, 0.08);
+}
+
+.app-shell[class*='app-shell--'] button {
+  background: linear-gradient(140deg, var(--role-primary), var(--role-secondary));
+}
+
+.role-dashboard {
+  --dashboard-ring: var(--role-primary);
+}
+
+.role-dashboard-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(20, 33, 61, 0.08);
+  background:
+    radial-gradient(circle at 5% 15%, var(--role-soft), transparent 38%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.58));
+  box-shadow: 0 12px 26px rgba(20, 33, 61, 0.08);
+}
+
+.role-dashboard-hero__title h2 {
+  margin: 8px 0 6px;
+}
+
+.role-dashboard-hero__title p {
+  margin: 0;
+  color: rgba(20, 33, 61, 0.72);
+}
+
+.role-dashboard-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--role-soft);
+  color: var(--role-primary);
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.role-dashboard-hero__meta {
+  display: grid;
+  gap: 10px;
+}
+
+.role-dashboard-hero__blurb {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(20, 33, 61, 0.09);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.role-dashboard-hero__blurb strong {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--role-primary);
+}
+
+.role-dashboard-hero__blurb p {
+  margin: 4px 0 0;
+  font-size: 0.84rem;
+  color: rgba(20, 33, 61, 0.8);
+}
+
+.role-dashboard-signal-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.role-dashboard-signal {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(20, 33, 61, 0.08);
+  color: rgba(20, 33, 61, 0.8);
+}
+
+.role-dashboard-actions {
+  margin-top: 0;
+  align-self: start;
+}
+
+.role-dashboard .card {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.66));
+  border-color: rgba(20, 33, 61, 0.08);
+  box-shadow: 0 10px 26px rgba(20, 33, 61, 0.07);
+}
+
+.role-dashboard .kpi-grid .card {
+  border-top: 4px solid var(--dashboard-ring);
+}
+
+.role-dashboard .dashboard-link {
+  border: 1px solid rgba(20, 33, 61, 0.1);
+}
+
+.role-dashboard .dashboard-link:hover {
+  background: var(--role-soft);
+}
+
+.role-dashboard--admin {
+  --dashboard-ring: #8a4f08;
+}
+
+.role-dashboard--doctor {
+  --dashboard-ring: #0f766e;
+}
+
+.role-dashboard--patient {
+  --dashboard-ring: #0369a1;
+}
+
+.role-dashboard--receptionist {
+  --dashboard-ring: #be123c;
+}
+
+.role-dashboard--receptionist .role-dashboard-hero {
+  border-color: rgba(190, 24, 93, 0.22);
+  background:
+    radial-gradient(circle at 4% 0%, rgba(244, 63, 94, 0.26), transparent 36%),
+    radial-gradient(circle at 96% 100%, rgba(251, 146, 60, 0.24), transparent 34%),
+    linear-gradient(145deg, rgba(255, 247, 237, 0.96), rgba(255, 241, 242, 0.9));
+}
+
+.role-dashboard--receptionist .role-dashboard-hero__blurb,
+.role-dashboard--receptionist .role-dashboard-signal {
+  background: rgba(255, 255, 255, 0.64);
+  border-color: rgba(190, 24, 93, 0.16);
+}
+
+.role-dashboard--receptionist .card {
+  border-color: rgba(190, 24, 93, 0.18);
+  background: linear-gradient(160deg, rgba(255, 248, 250, 0.92), rgba(255, 241, 242, 0.8));
+}
+
+.reception-command-deck {
+  border: 1px solid rgba(190, 24, 93, 0.18);
+  background:
+    radial-gradient(circle at 0% 5%, rgba(244, 63, 94, 0.24), transparent 34%),
+    radial-gradient(circle at 95% 95%, rgba(245, 158, 11, 0.2), transparent 34%),
+    linear-gradient(155deg, rgba(255, 250, 245, 0.96), rgba(255, 230, 236, 0.84));
+}
+
+.reception-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.reception-kpi {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(190, 24, 93, 0.18);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(255, 236, 241, 0.8));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.reception-kpi span {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(20, 33, 61, 0.66);
+  font-weight: 700;
+}
+
+.reception-kpi strong {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.reception-kpi small {
+  color: rgba(20, 33, 61, 0.66);
+}
+
+.reception-kpi--pending strong { color: #be123c; }
+.reception-kpi--confirmed strong { color: #1d4ed8; }
+.reception-kpi--completed strong { color: #0f766e; }
+.reception-kpi--capacity strong { color: #b45309; }
+
+.reception-showcase-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+}
+
+.reception-queue-board {
+  border-left: 4px solid #be123c;
+}
+
+.reception-queue-list {
+  display: grid;
+  gap: 10px;
+}
+
+.reception-queue-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(190, 24, 93, 0.14);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.88), rgba(255, 237, 242, 0.78));
+}
+
+.reception-queue-time {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #9f1239;
+  min-width: 58px;
+}
+
+.reception-queue-info {
+  display: grid;
+  gap: 2px;
+}
+
+.reception-queue-info strong {
+  font-size: 0.9rem;
+}
+
+.reception-queue-info span {
+  color: rgba(20, 33, 61, 0.66);
+  font-size: 0.82rem;
+}
+
+.reception-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  min-width: 94px;
+  min-height: 28px;
+  padding: 4px 10px;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.reception-status-pill--pending {
+  background: rgba(244, 63, 94, 0.14);
+  color: #9f1239;
+}
+
+.reception-status-pill--confirmed {
+  background: rgba(37, 99, 235, 0.14);
+  color: #1d4ed8;
+}
+
+.reception-status-pill--completed {
+  background: rgba(13, 148, 136, 0.14);
+  color: #0f766e;
+}
+
+.reception-status-pill--canceled {
+  background: rgba(127, 29, 29, 0.14);
+  color: #991b1b;
+}
+
+.reception-action-hub {
+  border-left: 4px solid #b45309;
+}
+
+.reception-action-hub p {
+  margin-top: 0;
+  color: rgba(20, 33, 61, 0.72);
+}
+
+.reception-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.reception-action-grid .dashboard-link {
+  min-height: 46px;
+  font-size: 0.84rem;
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(255, 236, 241, 0.74));
+}
+
+.reception-action-grid .dashboard-link:hover {
+  background: linear-gradient(145deg, rgba(255, 236, 241, 0.92), rgba(255, 229, 235, 0.9));
+}
+
+.reception-action-footer {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.reception-action-footer div {
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(190, 24, 93, 0.08);
+  border: 1px solid rgba(190, 24, 93, 0.12);
+  display: grid;
+  gap: 2px;
+}
+
+.reception-action-footer span {
+  font-size: 0.73rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(20, 33, 61, 0.6);
+}
+
+.reception-action-footer strong {
+  font-size: 1.2rem;
+  color: #9f1239;
+}
+
+.reception-shift-pulse {
+  border: 1px solid rgba(180, 83, 9, 0.2);
+  background: linear-gradient(145deg, rgba(255, 249, 240, 0.94), rgba(255, 236, 241, 0.8));
+}
+
+.reception-pulse-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.reception-pulse-grid article {
+  border-radius: 12px;
+  border: 1px solid rgba(190, 24, 93, 0.14);
+  padding: 10px 12px;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(255, 232, 238, 0.76));
+  display: grid;
+  gap: 4px;
+}
+
+.reception-pulse-grid span {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(20, 33, 61, 0.62);
+}
+
+.reception-pulse-grid strong {
+  font-size: 1.2rem;
+  color: #9f1239;
+}
+
 .page-header {
   margin-bottom: 18px;
 }
@@ -2079,6 +2498,10 @@ td {
   .kpi-grid,
   .admin-kpi-grid,
   .chart-grid,
+  .reception-kpi-grid,
+  .reception-showcase-grid,
+  .reception-action-grid,
+  .reception-pulse-grid,
   .admin-overview-grid,
   .doctor-command-grid,
   .doctor-tactical-grid,
@@ -2151,5 +2574,13 @@ td {
 
   .quick-links-grid {
     grid-template-columns: 1fr;
+  }
+
+  .role-dashboard-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .role-dashboard-actions {
+    justify-self: start;
   }
 }

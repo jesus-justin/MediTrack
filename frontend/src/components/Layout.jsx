@@ -56,6 +56,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const username = getAuthValue('username');
   const role = getAuthValue('role') || 'RECEPTIONIST';
+  const roleClass = `app-shell--${role.toLowerCase()}`;
   const visibleLinks = roleLinks[role] || roleLinks.RECEPTIONIST;
 
   const logout = () => {
@@ -64,7 +65,7 @@ export default function Layout() {
   };
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${roleClass}`}>
       <aside className="sidebar glass">
         <h1>MediTrack</h1>
         <p className="muted">Hospital Workflow Suite</p>

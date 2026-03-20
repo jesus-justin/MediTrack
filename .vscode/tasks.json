@@ -23,11 +23,20 @@
     },
     {
       "label": "MediTrack Start All",
-      "dependsOn": [
-        "MediTrack Backend",
-        "MediTrack Frontend"
+      "type": "shell",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/start-meditrack.ps1"
       ],
-      "dependsOrder": "parallel"
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": []
     }
   ]
 }

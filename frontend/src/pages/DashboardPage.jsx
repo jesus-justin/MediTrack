@@ -61,6 +61,7 @@ function isSameLocalDate(a, b) {
 
 export default function DashboardPage() {
   const role = getAuthValue('role') || 'RECEPTIONIST';
+  const roleClass = role.toLowerCase();
   const username = getAuthValue('username') || '';
   const [dashboard, setDashboard] = useState({});
   const [summary, setSummary] = useState({
@@ -481,6 +482,44 @@ export default function DashboardPage() {
     'Admin monitors outcomes, utilization, and service performance.'
   ];
 
+  const receptionistTodayAppointments = useMemo(() => {
+    if (role !== 'RECEPTIONIST') return [];
+    const now = new Date();
+    return allAppointments
+      .filter((appointment) => {
+        const start = toDateOrNull(appointment.startTime);
+        return start ? isSameLocalDate(start, now) : false;
+      })
+      .sort((left, right) => new Date(left.startTime) - new Date(right.startTime));
+  }, [role, allAppointments]);
+
+  const receptionistQueueStats = useMemo(() => {
+    if (role !== 'RECEPTIONIST') return null;
+
+    const pending = receptionistTodayAppointments.filter((appointment) => appointment.status === 'PENDING').length;
+    const confirmed = receptionistTodayAppointments.filter((appointment) => appointment.status === 'CONFIRMED').length;
+    const completed = receptionistTodayAppointments.filter((appointment) => appointment.status === 'COMPLETED').length;
+    const canceled = receptionistTodayAppointments.filter((appointment) => appointment.status === 'CANCELED').length;
+    const upcoming = receptionistTodayAppointments.filter((appointment) => {
+      const start = toDateOrNull(appointment.startTime);
+      return start ? start.getTime() > Date.now() : false;
+    });
+
+    return {
+      pending,
+      confirmed,
+      completed,
+      canceled,
+      upcoming,
+      total: receptionistTodayAppointments.length
+    };
+  }, [role, receptionistTodayAppointments]);
+
+  const receptionistQueuePreview = useMemo(() => {
+    if (role !== 'RECEPTIONIST') return [];
+    return receptionistTodayAppointments.slice(0, 8);
+  }, [role, receptionistTodayAppointments]);
+
   const titleByRole = {
     ADMIN: 'System Administration & Oversight',
     RECEPTIONIST: 'Front Desk Operations Dashboard',
@@ -494,15 +533,80 @@ export default function DashboardPage() {
     PATIENT: 'Track service activity and stay informed about the care journey touchpoints.'
   };
 
+  const roleThemeNotes = {
+    ADMIN: {
+      tag: 'Control Tower',
+      focus: 'Oversight of service continuity and security posture',
+      tone: 'Precise, risk-aware, policy-first operations'
+    },
+    RECEPTIONIST: {
+      tag: 'Frontline Flow',
+      focus: 'Queue balancing, check-in speed, and desk coordination',
+      tone: 'Fast, warm, and patient-facing execution'
+    },
+    DOCTOR: {
+      tag: 'Clinical Pulse',
+      focus: 'Caseload control and documentation continuity',
+      tone: 'Calm focus and evidence-driven decision making'
+    },
+    PATIENT: {
+      tag: 'Care Compass',
+      focus: 'Clarity on appointments, records, and communication',
+      tone: 'Supportive, transparent, confidence-building experience'
+    }
+  };
+
+  const activeRoleTheme = roleThemeNotes[role] || roleThemeNotes.RECEPTIONIST;
+
+  const heroSignalsByRole = {
+    ADMIN: [
+      `API ${health.status}`,
+      `${summary.users} managed users`,
+      `${summary.appointments} total appointments`
+    ],
+    RECEPTIONIST: [
+      `${summary.pendingAppointments} pending today`,
+      `${summary.confirmedAppointments} confirmed`,
+      `${summary.patients} registered patients`
+    ],
+    DOCTOR: [
+      `${doctorKpis?.todayTotal ?? 0} in today's queue`,
+      `${doctorKpis?.completedToday ?? 0} completed visits`,
+      `${formatMinutes(doctorKpis?.focusedMinutes ?? 0)} focused care time`
+    ],
+    PATIENT: [
+      `${summary.consultations} consultation records`,
+      `${summary.doctors} available doctors`,
+      `${notifications.patientReminders.length} active reminders`
+    ]
+  };
+  const heroSignals = heroSignalsByRole[role] || heroSignalsByRole.RECEPTIONIST;
+
   // ── render ────────────────────────────────────────────────────────────────
   return (
-    <div>
-      <header className="page-header">
-        <div>
+    <div className={`role-dashboard role-dashboard--${roleClass}`}>
+      <header className="page-header role-dashboard-hero">
+        <div className="role-dashboard-hero__title">
+          <span className="role-dashboard-pill">{activeRoleTheme.tag}</span>
           <h2>{titleByRole[role] || titleByRole.RECEPTIONIST}</h2>
           <p>{subtitleByRole[role] || subtitleByRole.RECEPTIONIST}</p>
         </div>
-        <div className="page-header-actions">
+        <div className="role-dashboard-hero__meta">
+          <div className="role-dashboard-hero__blurb">
+            <strong>Focus</strong>
+            <p>{activeRoleTheme.focus}</p>
+          </div>
+          <div className="role-dashboard-hero__blurb">
+            <strong>Tone</strong>
+            <p>{activeRoleTheme.tone}</p>
+          </div>
+          <div className="role-dashboard-signal-grid">
+            {heroSignals.map((signal) => (
+              <span key={signal} className="role-dashboard-signal">{signal}</span>
+            ))}
+          </div>
+        </div>
+        <div className="page-header-actions role-dashboard-actions">
           <button type="button" onClick={load} disabled={refreshing}>
             {refreshing ? 'Refreshing…' : 'Refresh Dashboard'}
           </button>
@@ -930,16 +1034,138 @@ export default function DashboardPage() {
            NON-ADMIN ROLE DASHBOARDS
            ════════════════════════════╝ */
         <>
-          <div className="kpi-grid">
-            {visibleRoleKpis.map((kpi) => (
-              <article key={kpi.label} className="card">
-                <h3>{kpi.label}</h3>
-                <p>{kpi.value}</p>
-              </article>
-            ))}
-          </div>
+          {role === 'RECEPTIONIST' ? (
+            <>
+              <section className="card reception-command-deck">
+                <div className="section-header-row">
+                  <h3>Reception Command Deck</h3>
+                  <small>Live queue, desk readiness, and shift momentum.</small>
+                </div>
+                <div className="reception-kpi-grid">
+                  <article className="reception-kpi reception-kpi--pending">
+                    <span>Pending Queue</span>
+                    <strong>{receptionistQueueStats?.pending ?? 0}</strong>
+                    <small>Patients waiting for confirmation</small>
+                  </article>
+                  <article className="reception-kpi reception-kpi--confirmed">
+                    <span>Confirmed Today</span>
+                    <strong>{receptionistQueueStats?.confirmed ?? 0}</strong>
+                    <small>Ready for doctor handoff</small>
+                  </article>
+                  <article className="reception-kpi reception-kpi--completed">
+                    <span>Completed Visits</span>
+                    <strong>{receptionistQueueStats?.completed ?? 0}</strong>
+                    <small>Successfully closed encounters</small>
+                  </article>
+                  <article className="reception-kpi reception-kpi--capacity">
+                    <span>Upcoming Slots</span>
+                    <strong>{receptionistQueueStats?.upcoming?.length ?? 0}</strong>
+                    <small>Still ahead this shift</small>
+                  </article>
+                </div>
+              </section>
 
-          {role === 'DOCTOR' && doctorKpis && (
+              <section className="reception-showcase-grid">
+                <article className="card reception-queue-board">
+                  <div className="section-header-row">
+                    <h3>Live Queue Board</h3>
+                    <Link className="text-action-link" to="/app/appointments">Open full board →</Link>
+                  </div>
+                  <div className="reception-queue-list">
+                    {receptionistQueuePreview.map((appointment) => {
+                      const start = toDateOrNull(appointment.startTime);
+                      const timeLabel = start
+                        ? start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : 'TBA';
+                      return (
+                        <div key={appointment.id} className={`reception-queue-item reception-queue-item--${String(appointment.status || '').toLowerCase()}`}>
+                          <div className="reception-queue-time">{timeLabel}</div>
+                          <div className="reception-queue-info">
+                            <strong>{appointment.patient?.firstName} {appointment.patient?.lastName}</strong>
+                            <span>Dr. {appointment.doctor?.fullName || 'Unassigned'}</span>
+                          </div>
+                          <span className={`reception-status-pill reception-status-pill--${String(appointment.status || '').toLowerCase()}`}>
+                            {appointment.status || 'UNKNOWN'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    {receptionistQueuePreview.length === 0 ? <small>No appointments scheduled for today.</small> : null}
+                  </div>
+                </article>
+
+                <article className="card reception-action-hub">
+                  <h3>Desk Action Hub</h3>
+                  <p>Jump directly into high-frequency front desk workflows.</p>
+                  <div className="reception-action-grid">
+                    <Link className="dashboard-link" to="/app/reception-desk">Reception Desk</Link>
+                    <Link className="dashboard-link" to="/app/today-schedule">Today's Schedule</Link>
+                    <Link className="dashboard-link" to="/app/quick-book">Quick Book</Link>
+                    <Link className="dashboard-link" to="/app/patient-checkin">Patient Check-in</Link>
+                    <Link className="dashboard-link" to="/app/walkin-registration">Walk-in Registration</Link>
+                    <Link className="dashboard-link" to="/app/billing-invoicing">Billing / Invoicing</Link>
+                  </div>
+                  <div className="reception-action-footer">
+                    <div>
+                      <span>Doctor Alerts</span>
+                      <strong>{notifications.doctorUpcoming.length}</strong>
+                    </div>
+                    <div>
+                      <span>Patient Reminders</span>
+                      <strong>{notifications.patientReminders.length}</strong>
+                    </div>
+                  </div>
+                </article>
+              </section>
+
+              <section className="card reception-shift-pulse">
+                <h3>Shift Pulse</h3>
+                <div className="reception-pulse-grid">
+                  <article>
+                    <span>Queue Pressure</span>
+                    <strong>{(receptionistQueueStats?.pending ?? 0) > 4 ? 'High' : (receptionistQueueStats?.pending ?? 0) > 0 ? 'Moderate' : 'Calm'}</strong>
+                  </article>
+                  <article>
+                    <span>Total Encounters Today</span>
+                    <strong>{receptionistQueueStats?.total ?? 0}</strong>
+                  </article>
+                  <article>
+                    <span>Canceled</span>
+                    <strong>{receptionistQueueStats?.canceled ?? 0}</strong>
+                  </article>
+                </div>
+              </section>
+
+              <Suspense fallback={<section className="card"><small>Loading charts...</small></section>}>
+                <div className="chart-grid">
+                  <LineChartCard title="Today's Appointment Trends" labels={trend.labels} values={trend.values} />
+                  <BarChartCard title="Doctor Utilization" labels={utilization.labels} values={utilization.values} />
+                </div>
+              </Suspense>
+
+              <section className="card">
+                <h3>Connected Care Workflow</h3>
+                <div className="connected-flow-grid">
+                  {sharedFlow.map((step) => (
+                    <article key={step} className="connected-flow-item">
+                      <p>{step}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            </>
+          ) : (
+            <>
+              <div className="kpi-grid">
+                {visibleRoleKpis.map((kpi) => (
+                  <article key={kpi.label} className="card">
+                    <h3>{kpi.label}</h3>
+                    <p>{kpi.value}</p>
+                  </article>
+                ))}
+              </div>
+
+              {role === 'DOCTOR' && doctorKpis && (
             <>
               <section className="card doctor-command-center">
                 <div className="section-header-row">
@@ -1047,47 +1273,49 @@ export default function DashboardPage() {
             </>
           )}
 
-          <section className="card">
-            <h3>Connected Care Workflow</h3>
-            <div className="connected-flow-grid">
-              {sharedFlow.map((step) => (
-                <article key={step} className="connected-flow-item">
-                  <p>{step}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <Suspense fallback={<section className="card"><small>Loading charts...</small></section>}>
-            <div className="chart-grid">
-              <LineChartCard title="Appointment Trends" labels={trend.labels} values={trend.values} />
-              <BarChartCard title="Doctor Utilization" labels={utilization.labels} values={utilization.values} />
-              <DoughnutChartCard title="Common Diagnoses" labels={diagnosis.labels} values={diagnosis.values} />
-              <DoughnutChartCard title="Gender Breakdown" labels={Object.keys(gender)} values={Object.values(gender)} />
-            </div>
-          </Suspense>
-
-          <section className="card chart-card">
-            <h3>Peak Hours Heatmap (Simplified)</h3>
-            <div className="heatmap-row">
-              {peak.labels.map((label, idx) => (
-                <div
-                  key={label}
-                  className="heat-cell"
-                  style={{ opacity: Math.min(1, (peak.values[idx] || 0) / 10 + 0.2) }}
-                >
-                  <strong>{label}</strong>
-                  <span>{peak.values[idx]}</span>
+              <section className="card">
+                <h3>Connected Care Workflow</h3>
+                <div className="connected-flow-grid">
+                  {sharedFlow.map((step) => (
+                    <article key={step} className="connected-flow-item">
+                      <p>{step}</p>
+                    </article>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
+              </section>
 
-          {role === 'PATIENT' ? (
-            <Suspense fallback={<section className="card"><small>Loading assistant...</small></section>}>
-              <PatientChatbotCard />
-            </Suspense>
-          ) : null}
+              <Suspense fallback={<section className="card"><small>Loading charts...</small></section>}>
+                <div className="chart-grid">
+                  <LineChartCard title="Appointment Trends" labels={trend.labels} values={trend.values} />
+                  <BarChartCard title="Doctor Utilization" labels={utilization.labels} values={utilization.values} />
+                  <DoughnutChartCard title="Common Diagnoses" labels={diagnosis.labels} values={diagnosis.values} />
+                  <DoughnutChartCard title="Gender Breakdown" labels={Object.keys(gender)} values={Object.values(gender)} />
+                </div>
+              </Suspense>
+
+              <section className="card chart-card">
+                <h3>Peak Hours Heatmap (Simplified)</h3>
+                <div className="heatmap-row">
+                  {peak.labels.map((label, idx) => (
+                    <div
+                      key={label}
+                      className="heat-cell"
+                      style={{ opacity: Math.min(1, (peak.values[idx] || 0) / 10 + 0.2) }}
+                    >
+                      <strong>{label}</strong>
+                      <span>{peak.values[idx]}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {role === 'PATIENT' ? (
+                <Suspense fallback={<section className="card"><small>Loading assistant...</small></section>}>
+                  <PatientChatbotCard />
+                </Suspense>
+              ) : null}
+            </>
+          )}
         </>
       )}
     </div>

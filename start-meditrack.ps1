@@ -153,13 +153,19 @@ function Wait-ForPort {
 }
 
 function Ensure-MySqlReady {
+  param(
+    [int]$TimeoutSeconds = 45
+  )
+
   if (Test-PortListening -Port $mysqlPort) {
     return $true
   }
 
-  foreach ($serviceName in @('mysql', 'MySQL80', 'mysql80', 'xamppmysql')) {
+  $serviceFound = $false
+  foreach ($serviceName in @('mysql', 'MySQL80', 'xamppmysql')) {
     try {
       $service = Get-Service -Name $serviceName -ErrorAction Stop
+      $serviceFound = $true
       if ($service.Status -ne 'Running') {
         Start-Service -Name $serviceName -ErrorAction Stop
         Write-Host "Started MySQL service '$serviceName'." -ForegroundColor Cyan
@@ -170,13 +176,40 @@ function Ensure-MySqlReady {
     }
   }
 
-  return (Wait-ForPort -Port $mysqlPort -TimeoutSeconds 45 -ServiceName 'MySQL')
+  if (-not (Test-PortListening -Port $mysqlPort)) {
+    if (-not $serviceFound) {
+      Write-Host 'No MySQL Windows service found. Trying XAMPP MySQL fallback...' -ForegroundColor Yellow
+    }
+
+    $xamppRoot = 'C:\xampp'
+    $mysqlStartBat = Join-Path $xamppRoot 'mysql_start.bat'
+    $mysqldPath = Join-Path $xamppRoot 'mysql\bin\mysqld.exe'
+    $myIniPath = Join-Path $xamppRoot 'mysql\bin\my.ini'
+
+    if (Test-Path $mysqlStartBat) {
+      Start-Process cmd.exe -WindowStyle Hidden -ArgumentList @(
+        '/d',
+        '/c',
+        "`"$mysqlStartBat`""
+      ) | Out-Null
+      Start-Sleep -Seconds 2
+    }
+
+    if ((-not (Test-PortListening -Port $mysqlPort)) -and (Test-Path $mysqldPath) -and (Test-Path $myIniPath)) {
+      Start-Process -FilePath $mysqldPath -WindowStyle Hidden -ArgumentList @(
+        "--defaults-file=$myIniPath",
+        '--standalone'
+      ) | Out-Null
+    }
+  }
+
+  return (Wait-ForPort -Port $mysqlPort -TimeoutSeconds $TimeoutSeconds -ServiceName 'MySQL')
 }
 
 function Start-BackendIfNeeded {
   if (Test-BackendHealthy) {
     Write-Host 'Backend already responding on http://localhost:8081/api.' -ForegroundColor Green
-    return
+    return $true
   }
 
   if ((Test-PortListening -Port 8081) -and (-not (Test-BackendHealthy))) {
@@ -186,13 +219,13 @@ function Start-BackendIfNeeded {
     } else {
       Write-Host 'Port 8081 is already in use by another process. Stop it and start MediTrack again.' -ForegroundColor Red
     }
-    return
+    return $false
   }
 
   $javaHome = Resolve-Java21Home
   if (-not $javaHome) {
     Write-Host 'Java 21 was not found. Install or keep JDK 21 under C:\jdk or %USERPROFILE%\.jdk before starting MediTrack.' -ForegroundColor Red
-    return
+    return $false
   }
 
   $backendLog = Join-Path $logDir 'backend.log'
@@ -218,7 +251,7 @@ set "JAVA_HOME=$javaHome" && set "PATH=$javaHome\bin;%PATH%" && cd /d "$backendP
 
     if ($buildExitCode -ne 0) {
       Write-Host "Backend build failed (exit code $buildExitCode). Check logs in: $backendLog" -ForegroundColor Red
-      return
+      return $false
     }
 
     $jarPath = Get-BackendRunnableJar
@@ -226,7 +259,7 @@ set "JAVA_HOME=$javaHome" && set "PATH=$javaHome\bin;%PATH%" && cd /d "$backendP
 
   if (-not $jarPath) {
     Write-Host "Backend JAR is still missing after build. Check logs in: $backendLog" -ForegroundColor Red
-    return
+    return $false
   }
 
   $backendCommand = @"
@@ -239,6 +272,7 @@ set "JAVA_HOME=$javaHome" && set "PATH=$javaHome\bin;%PATH%" && cd /d "$backendP
   ) | Out-Null
 
   Write-Host "Backend startup triggered from JAR: $jarPath" -ForegroundColor Cyan
+  return $true
 }
 
 function Start-FrontendIfNeeded {
@@ -260,26 +294,44 @@ function Start-FrontendIfNeeded {
 
 Write-Host 'Starting MediTrack services...' -ForegroundColor Cyan
 
-$mysqlReady = Ensure-MySqlReady
+$mysqlReady = Ensure-MySqlReady -TimeoutSeconds 60
 if (-not $mysqlReady) {
-  Write-Host 'MySQL is still unavailable on port 3306. Backend may fail to start until MySQL is up.' -ForegroundColor Yellow
+  Write-Host 'MySQL is still unavailable on port 3306. Startup will keep retrying backend until MySQL is ready.' -ForegroundColor Yellow
 }
 
-Start-BackendIfNeeded
+Start-BackendIfNeeded | Out-Null
 Start-FrontendIfNeeded
 
 $backendReady = $false
-$backendDeadline = (Get-Date).AddSeconds(120)
+$backendDeadline = (Get-Date).AddMinutes(8)
+$nextBackendAttempt = Get-Date
+$backendAttempt = 0
 while ((Get-Date) -lt $backendDeadline) {
   if (Test-BackendHealthy) {
     $backendReady = $true
     break
   }
+
+  if ((Get-Date) -ge $nextBackendAttempt) {
+    $backendAttempt += 1
+
+    if (-not (Test-PortListening -Port $mysqlPort)) {
+      Write-Host "MySQL not ready yet. Waiting before backend retry (attempt $backendAttempt)..." -ForegroundColor Yellow
+      Ensure-MySqlReady -TimeoutSeconds 30 | Out-Null
+    }
+
+    if (-not (Test-PortListening -Port 8081)) {
+      Start-BackendIfNeeded | Out-Null
+    }
+
+    $nextBackendAttempt = (Get-Date).AddSeconds(20)
+  }
+
   Start-Sleep -Seconds 2
 }
 
 if (-not $backendReady) {
-  Write-Host 'Backend did not become healthy within 120 seconds.' -ForegroundColor Yellow
+  Write-Host 'Backend did not become healthy within 8 minutes.' -ForegroundColor Yellow
 }
 
 $frontendReady = Wait-ForPort -Port 5173 -TimeoutSeconds 90 -ServiceName 'Frontend'
