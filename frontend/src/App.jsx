@@ -13,7 +13,6 @@ const ConsultationsPage = lazy(() => import('./pages/ConsultationsPage'));
 const UsersPage = lazy(() => import('./pages/UsersPage'));
 const ReceptionDeskPage = lazy(() => import('./pages/ReceptionDeskPage'));
 const TodaySchedulePage = lazy(() => import('./pages/TodaySchedulePage'));
-const QuickBookPage = lazy(() => import('./pages/QuickBookPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const AssistancePage = lazy(() => import('./pages/AssistancePage'));
 const ReceptionOperationsPage = lazy(() => import('./pages/ReceptionOperationsPage'));
@@ -62,16 +61,13 @@ export default function App() {
           <Route path="users" element={<AdminRoute><UsersPage /></AdminRoute>} />
           <Route path="patients" element={<RoleRoute roles={['ADMIN', 'RECEPTIONIST', 'DOCTOR']}><PatientsPage /></RoleRoute>} />
           <Route path="doctors" element={<AdminRoute><DoctorsPage /></AdminRoute>} />
-          <Route path="appointments" element={<RoleRoute roles={['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'PATIENT']}><AppointmentsPage /></RoleRoute>} />
+          <Route path="appointments" element={<RoleRoute roles={['RECEPTIONIST', 'DOCTOR', 'PATIENT']}><AppointmentsPage /></RoleRoute>} />
           <Route path="reception-desk" element={<ReceptionistRoute><ReceptionDeskPage /></ReceptionistRoute>} />
           <Route path="today-schedule" element={<ReceptionistRoute><TodaySchedulePage /></ReceptionistRoute>} />
-          <Route path="quick-book" element={<ReceptionistRoute><QuickBookPage /></ReceptionistRoute>} />
           <Route path="notifications" element={<ReceptionistRoute><NotificationsPage /></ReceptionistRoute>} />
-          <Route path="consultations" element={<RoleRoute roles={['ADMIN', 'DOCTOR', 'PATIENT']}><ConsultationsPage /></RoleRoute>} />
+          <Route path="consultations" element={<RoleRoute roles={['DOCTOR', 'PATIENT']}><ConsultationsPage /></RoleRoute>} />
 
-          <Route path="patient-checkin" element={<ReceptionistRoute><ReceptionOperationsPage mode="checkin" /></ReceptionistRoute>} />
           <Route path="billing-invoicing" element={<ReceptionistRoute><ReceptionOperationsPage mode="billing" /></ReceptionistRoute>} />
-          <Route path="walkin-registration" element={<ReceptionistRoute><ReceptionOperationsPage mode="walkin" /></ReceptionistRoute>} />
 
           <Route path="my-schedule" element={<RoleRoute roles={['DOCTOR']}><DoctorWorkspacePage mode="schedule" /></RoleRoute>} />
           <Route path="write-prescription" element={<RoleRoute roles={['DOCTOR']}><DoctorWorkspacePage mode="prescriptions" /></RoleRoute>} />
@@ -86,10 +82,6 @@ export default function App() {
           <Route path="my-profile" element={<RoleRoute roles={['PATIENT']}><PatientWorkspacePage mode="profile" /></RoleRoute>} />
 
           <Route path="audit-logs" element={<AdminRoute><AdminControlCenterPage mode="audit" /></AdminRoute>} />
-          <Route path="analytics-reports" element={<AdminRoute><AdminControlCenterPage mode="reports" /></AdminRoute>} />
-          <Route path="clinic-settings" element={<AdminRoute><AdminControlCenterPage mode="settings" /></AdminRoute>} />
-          <Route path="billing-payments" element={<AdminRoute><AdminControlCenterPage mode="billing" /></AdminRoute>} />
-          <Route path="announcements" element={<AdminRoute><AdminControlCenterPage mode="announcements" /></AdminRoute>} />
           <Route path="role-permissions" element={<AdminRoute><AdminControlCenterPage mode="permissions" /></AdminRoute>} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
