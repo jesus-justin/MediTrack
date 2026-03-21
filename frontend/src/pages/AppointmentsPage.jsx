@@ -4,6 +4,16 @@ import { appointmentApi, doctorApi, patientApi } from '../services/api';
 import { getAuthValue } from '../services/authStorage';
 import { PORTAL_KEYS, appendCollectionItem, nextPortalId } from '../services/portalStore';
 
+function toLocalDateTimeMinute(value) {
+  const date = value instanceof Date ? value : new Date(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 export default function AppointmentsPage() {
   const role = getAuthValue('role') || 'RECEPTIONIST';
   const username = getAuthValue('username') || '';
@@ -13,6 +23,9 @@ export default function AppointmentsPage() {
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [cancelReason, setCancelReason] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ patientId: '', doctorId: '', startTime: '', endTime: '', reason: '', notes: '' });
 
   const load = async () => {
@@ -42,13 +55,40 @@ export default function AppointmentsPage() {
 
   const create = async (e) => {
     e.preventDefault();
-    await appointmentApi.create({
-      ...form,
-      patientId: Number(form.patientId),
-      doctorId: Number(form.doctorId)
-    });
-    setForm({ patientId: '', doctorId: '', startTime: '', endTime: '', reason: '', notes: '' });
-    load();
+    setMessage('');
+    setError('');
+
+    const start = new Date(form.startTime);
+    const end = new Date(form.endTime);
+    const now = new Date();
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      setError('Please provide valid appointment start and end times.');
+      return;
+    }
+    if (start <= now) {
+      setError('Start time must be in the future.');
+      return;
+    }
+    if (end <= start) {
+      setError('End time must be after start time.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await appointmentApi.create({
+        ...form,
+        patientId: Number(form.patientId),
+        doctorId: Number(form.doctorId)
+      });
+      setForm({ patientId: '', doctorId: '', startTime: '', endTime: '', reason: '', notes: '' });
+      setMessage('Appointment booked successfully.');
+      load();
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.response?.data?.error || 'Could not book appointment.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const setStatus = async (id, status) => {
@@ -79,6 +119,8 @@ export default function AppointmentsPage() {
       <header className="page-header"><h2>Appointment Scheduling</h2></header>
       {canCreateAppointment ? (
         <section className="card">
+          {message ? <p className="success">{message}</p> : null}
+          {error ? <p className="error">{error}</p> : null}
           <form className="form-grid" onSubmit={create}>
             <select value={form.patientId} onChange={(e) => setForm({ ...form, patientId: e.target.value })} required>
               <option value="">Select patient</option>
@@ -88,11 +130,11 @@ export default function AppointmentsPage() {
               <option value="">Select doctor</option>
               {doctors.map((d) => <option key={d.id} value={d.id}>{d.fullName}</option>)}
             </select>
-            <input type="datetime-local" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} required />
-            <input type="datetime-local" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} required />
+            <input type="datetime-local" min={toLocalDateTimeMinute(new Date())} value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} required />
+            <input type="datetime-local" min={form.startTime || toLocalDateTimeMinute(new Date())} value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} required />
             <input placeholder="Reason" value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} />
             <textarea placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-            <button type="submit">Book Appointment</button>
+            <button type="submit" disabled={submitting}>{submitting ? 'Booking...' : 'Book Appointment'}</button>
           </form>
         </section>
       ) : null}
