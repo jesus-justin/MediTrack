@@ -8,11 +8,8 @@ const roleLinks = {
     { to: '/app/appointments', label: 'Appointments' },
     { to: '/app/reception-desk', label: 'Reception Desk' },
     { to: '/app/today-schedule', label: "Today's Schedule" },
-    { to: '/app/quick-book', label: 'Quick Book' },
     { to: '/app/notifications', label: 'Notifications' },
-    { to: '/app/patient-checkin', label: 'Patient Check-in' },
-    { to: '/app/billing-invoicing', label: 'Billing / Invoicing' },
-    { to: '/app/walkin-registration', label: 'Walk-in Registration' }
+    { to: '/app/billing-invoicing', label: 'Billing / Invoicing' }
   ],
   DOCTOR: [
     { to: '/app', label: 'Dashboard' },
@@ -41,13 +38,7 @@ const roleLinks = {
     { to: '/app/users', label: 'Users' },
     { to: '/app/patients', label: 'Patients' },
     { to: '/app/doctors', label: 'Doctors & Staff' },
-    { to: '/app/appointments', label: 'Appointments' },
-    { to: '/app/consultations', label: 'Consultations' },
     { to: '/app/audit-logs', label: 'Audit Logs' },
-    { to: '/app/analytics-reports', label: 'Analytics & Reports' },
-    { to: '/app/clinic-settings', label: 'Clinic Settings' },
-    { to: '/app/billing-payments', label: 'Billing & Payments' },
-    { to: '/app/announcements', label: 'Announcements' },
     { to: '/app/role-permissions', label: 'Role & Permissions' }
   ]
 };
