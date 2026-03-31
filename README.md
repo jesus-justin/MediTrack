@@ -139,6 +139,11 @@ To remove auto-start later:
 ./remove-meditrack-autostart.ps1
 ```
 
+Removal behavior:
+- Deletes the `MediTrack Auto Start` scheduled task (if present)
+- Removes Startup-folder launchers (`MediTrack Auto Start.cmd` and legacy `MediTrack.lnk`)
+- Removes legacy registry autorun entry (`HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run` -> `MediTrack AutoStart`)
+
 Notes:
 - Keep MySQL (XAMPP) installed/runnable on port `3306`
 - The launcher now attempts to start common MySQL service names automatically and waits for readiness

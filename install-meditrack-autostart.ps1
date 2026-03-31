@@ -5,10 +5,22 @@ $startupScript = Join-Path $root 'start-meditrack.ps1'
 $taskName = 'MediTrack Auto Start'
 $startupFolder = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Startup'
 $startupCmd = Join-Path $startupFolder 'MediTrack Auto Start.cmd'
+$startupLnk = Join-Path $startupFolder 'MediTrack.lnk'
+$runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+$runValueName = 'MediTrack AutoStart'
 $taskInstalled = $false
 
 if (-not (Test-Path $startupScript)) {
   throw "Startup script not found: $startupScript"
+}
+
+# Remove stale autorun entries from older setup approaches.
+if (Test-Path $startupLnk) {
+  Remove-Item -Path $startupLnk -Force
+}
+
+if ($null -ne (Get-ItemProperty -Path $runKey -Name $runValueName -ErrorAction SilentlyContinue)) {
+  Remove-ItemProperty -Path $runKey -Name $runValueName -Force
 }
 
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"$startupScript\""
